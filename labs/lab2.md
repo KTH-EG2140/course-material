@@ -40,9 +40,11 @@ When the oracle test passes, you have proven the one thing refactoring must prov
 
 Your clean screener reports the same thing the awful one did: **this operating
 point violates the N-1 criterion** — around 15 contingencies cause overloads,
-the worst far beyond limits. That is not a bug in your code (the oracle agrees)
-and not an accident in the data: the Svedala CGMES file is a **stressed
-planning snapshot** — a design case, deliberately loaded to the edge. Real
+the worst far beyond limits. That is not a bug in your code (the oracle agrees) —
+and it is not news: several of you caught this weakness already in EG2130.
+Now your own screener confirms it systematically. The Svedala CGMES file is a
+**stressed planning snapshot** — a design case, deliberately loaded to the
+edge. Real
 systems are studied at such points precisely to find their limits; nobody would
 *operate* there. Two questions to discuss and note in your repo:
 
