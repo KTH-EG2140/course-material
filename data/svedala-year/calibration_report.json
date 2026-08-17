@@ -1,0 +1,24 @@
+{
+  "source": "SYNTHETIC PROXY — replace via fetch_entsoe.py",
+  "zone_map": {
+    "ZON_NORR": "SE1+SE2",
+    "ZON_MITT": "SE3",
+    "ZON_SYDVÄST": "SE4",
+    "ZON_EXTERN": "FI"
+  },
+  "k": 0.52,
+  "calib_shares": {
+    "0.505": 0.13333333333333333,
+    "0.52": 0.26666666666666666,
+    "0.535": 0.3333333333333333,
+    "0.55": 0.5666666666666667
+  },
+  "verified_insecure_share": 0.22916666666666666,
+  "hours": 8760,
+  "zone_base_mw": {
+    "ZON_EXTERN": 2300.0,
+    "ZON_MITT": 6111.0,
+    "ZON_NORR": 1180.0,
+    "ZON_SYDVÄST": 1390.0
+  }
+}
