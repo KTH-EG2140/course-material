@@ -36,6 +36,21 @@ Copy `n1_reference_results.csv` into `tests/data/` and write `tests/test_screene
 
 When the oracle test passes, you have proven the one thing refactoring must prove: *behaviour preserved.* Commit, push, watch CI go green.
 
+## 2b. What did your screener just tell you? (5 min, discuss in the pair)
+
+Your clean screener reports the same thing the awful one did: **this operating
+point violates the N-1 criterion** — around 15 contingencies cause overloads,
+the worst far beyond limits. That is not a bug in your code (the oracle agrees)
+and not an accident in the data: the Svedala CGMES file is a **stressed
+planning snapshot** — a design case, deliberately loaded to the edge. Real
+systems are studied at such points precisely to find their limits; nobody would
+*operate* there. Two questions to discuss and note in your repo:
+
+1. If you were the operator handed this screener output, what would you do first?
+2. How much load do you think Svedala *can* serve N-1 securely? Guess a
+   percentage — the course answers this properly with optimisation in
+   Lecturecise 9, and your screener will be the judge.
+
 ## 3. Pod check (20 min)
 
 Swap with the other pair in your pod (org access — open their repo on GitHub). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo (open an Issue titled "Lab 2 pod check"): one thing done well, one concrete improvement, one question. Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
