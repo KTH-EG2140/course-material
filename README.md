@@ -1,15 +1,8 @@
-# EG2140 course material — Module 1
+# EG2140 course material — STUDENT-FACING / PUBLIC
 
-Student-facing content for Module 1 (software engineering by hand).
-This folder maps 1:1 onto the future `KTH-EG2140/course-material` repo.
-
-```
-notebooks/   L01 warm-up (Colab badge points at the repo's final home)
-guides/      follow-along guides for Lecturecises 2-5 (+ LC3 companion files)
-labs/        instructions for Labs 1-4 + the Lab 2 review checklist
-lab2/        the awful N-1 screener + its reference results (the oracle)
-exercises/   bisect-practice.zip for Lab 3 part C
-```
-
-The Lab 1 template repo ships separately (template-p1-workbook.zip) —
-it becomes the GitHub Classroom template, not part of this repo.
+Everything in this folder is written to be published to
+`KTH-EG2140/course-material` and read by students: notebooks, guides, lab
+instructions, datasets. Nothing here may contain answer keys, personal data,
+or grading internals — those live outside this tree (see the repository root
+README). If you are about to commit something here, ask: *may every student —
+and the whole internet — read this?*
