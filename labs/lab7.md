@@ -17,4 +17,4 @@ Run your chosen model and persistence through `walk_forward` on a held-out week.
 Three sentences in the other pair's repo ("Lab 7 pod check") — at least one about their evaluation setup, not their model. Nothing handed in, nothing graded.
 
 ## Done when
-`walk_forward` tested, one skill number with an honest sentence around it in the README, pod check exchanged — before the Quiz 3 sitting. Lab 9 will reuse your harness unchanged: every challenger method fights on this exact battlefield.
+`walk_forward` tested, one skill number with an honest sentence around it in the README, pod check exchanged — before the Quiz 4 sitting. Lab 9 will reuse your harness unchanged: every challenger method fights on this exact battlefield.
