@@ -1,0 +1,4 @@
+notebooks/data_cache/
+notebooks/*.duckdb
+notebooks/*_clean.parquet
+.ipynb_checkpoints/
