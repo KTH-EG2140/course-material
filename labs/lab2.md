@@ -6,7 +6,7 @@ Someone left the course a gift: `awful_screener.py` — an N-1 screener that **w
 
 ## 0. Meet the patient (15 min)
 
-Get the file and the reference results from the course material (`lab2/` folder), drop both in your repo root, and run it:
+Get the file and the reference results from the course material (`labs/` folder), drop both in your repo root, and run it:
 
 ```bash
 python awful_screener.py

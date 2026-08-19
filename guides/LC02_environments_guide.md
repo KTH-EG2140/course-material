@@ -1,8 +1,10 @@
 # LC2 follow-along guide — Reproducible environments (+ survival git)
 
-*EG2140 · Lecturecise 2 hands-on. Work along in the session, or self-paced if you missed it. Time: ~45 minutes. Nothing here touches your course repository — that arrives in Lab 1. Today you practice in a scratch folder.*
+*EG2140 · Lecturecise 2 hands-on. Work along in the session, or self-paced if you missed it. Time: ~45 minutes, plus Part C (~10 min) before Lab 1. Nothing here touches your course repository — that arrives in Lab 1. Today you practice in a scratch folder.*
 
-**What you need:** a terminal, Python 3.11+, git, a text editor. (Checked in Lecturecise 1 — if something is broken, fix it now or use the Codespaces fallback linked on Canvas.)
+**What you need:** a terminal, Python 3.11+, git, a text editor. (Checked in Lecturecise 1 — if something is broken on your machine, fix it now: raise your hand, this session exists for exactly that.)
+
+**A note on terminals:** the commands below work in any modern shell. Where macOS/Linux and Windows differ, both variants are given — pick yours. Everything in this course can be done from the command line, and we encourage it: the CLI is where your Period 2 agent lives too.
 
 ---
 
@@ -10,13 +12,18 @@
 
 ### A1. Make a scratch folder and check your Python
 
+Create a folder called `eg2140-scratch` anywhere you like and open a terminal **in that folder**.
+
 ```bash
-mkdir eg2140-scratch && cd eg2140-scratch
-python --version        # some systems: python3 --version
+mkdir eg2140-scratch
+cd eg2140-scratch
+python --version
 ```
 
+*Hints: the two commands above work in both bash and PowerShell, one line at a time. If `python` is not found, try `python3` (macOS/Linux) or `py` (Windows). You can also create the folder in your file manager and use "Open in Terminal" / "Open PowerShell window here".*
+
 **Checkpoint:** version 3.11 or higher.
-*If you see 2.x or "command not found": your PATH points at the wrong Python — ask now, this is exactly what this session is for.*
+*If you see 2.x or "command not found": your PATH points at the wrong Python — ask now.*
 
 ### A2. Create a virtual environment
 
@@ -29,8 +36,10 @@ python -m venv .venv
 Activate it:
 
 ```bash
-source .venv/bin/activate        # macOS / Linux
-.venv\Scripts\activate           # Windows (PowerShell)
+source .venv/bin/activate          # macOS / Linux
+```
+```powershell
+.venv\Scripts\Activate.ps1         # Windows (PowerShell)
 ```
 
 **Checkpoint:** your prompt now starts with `(.venv)`.
@@ -52,17 +61,21 @@ deactivate
 python -c "import pandapower"    # this should FAIL
 ```
 
-**Checkpoint:** `ModuleNotFoundError`. That failure is the whole point: the package lives inside `.venv`, nowhere else. Reactivate:
-
-```bash
-source .venv/bin/activate        # or the Windows variant
-```
+**Checkpoint:** `ModuleNotFoundError`. That failure is the whole point: the package lives inside `.venv`, nowhere else. Reactivate (same command as in A2).
 
 ### A4. Freeze what you depend on
 
 ```bash
 pip freeze > requirements.txt
-cat requirements.txt             # Windows: type requirements.txt
+```
+
+Look inside the file — with your editor, or:
+
+```bash
+cat requirements.txt               # macOS / Linux
+```
+```powershell
+type requirements.txt              # Windows
 ```
 
 **Checkpoint:** a list of packages with pinned versions. This file *is* reproducibility: anyone (including future-you, and the CI robot you meet in Lab 1) can rebuild your exact environment with `pip install -r requirements.txt`.
@@ -116,10 +129,15 @@ git config --global user.email "you@kth.se"
 
 ```bash
 git init
+```
+
+Create a file named `.gitignore` containing a single line: `.venv/` — with your editor, or:
+
+```bash
 echo ".venv/" > .gitignore
 ```
 
-*Why the `.gitignore`: the venv is hundreds of megabytes of rebuildable files. You commit the `requirements.txt` recipe, never the environment itself.*
+*(The `echo` line works in bash and PowerShell alike.) Why the `.gitignore`: the venv is hundreds of megabytes of rebuildable files. You commit the `requirements.txt` recipe, never the environment itself.*
 
 ### B3. The save cycle: status → add → commit
 
@@ -136,19 +154,65 @@ That cycle — *status, add, commit with a message that says why* — is the hab
 
 ---
 
-## Part C — The same idea, one level up (5 min, watch or try)
+## Part C — Prepare for Lab 1 (10 min, do before the Lab 1 session)
 
-A venv freezes your *Python packages*. A **container** freezes the whole machine — OS, Python, everything. Your Lab 1 repository ships a `.devcontainer/` folder: one file that lets GitHub Codespaces build the complete course environment in your browser. It is the fallback if your laptop misbehaves, and it is Docker in its friendliest form. We look inside the file together; nothing to install today.
+Lab 1 assumes the steps below are already done, so that the session is spent building — not installing. Everything is the Part A/B routine, applied to your real course repository.
+
+### C1. Accept the invitation
+
+Check your KTH mail for a GitHub invitation to your personal repository `p1-workbook-<your username>` (sent after the day-1 survey). Accept it and log in on github.com so you can see the repository.
+
+**Checkpoint:** you can open your repository page in the browser.
+
+### C2. Clone it
+
+In the folder where you keep course work (not inside `eg2140-scratch`):
+
+```bash
+git clone https://github.com/KTH-EG2140/p1-workbook-<your username>.git
+cd p1-workbook-<your username>
+```
+
+*If git asks you to authenticate, follow its browser prompt (first time only).*
+
+### C3. Environment, from the recipe this time
+
+Create and activate a venv exactly as in A2, then install the pinned course environment:
+
+```bash
+python -m venv .venv
+# activate it (A2), then:
+pip install -r requirements.txt
+```
+
+**Checkpoint:** the install finishes without red errors. It is a few hundred megabytes — do this on decent wifi, not at 09:58 before the lab.
+
+### C4. Install the package you are about to build
+
+```bash
+pip install -e .
+```
+
+The `-e` is an *editable install*: Python runs the code straight from `src/`, so every edit you make is live immediately — no reinstalling. This is how the toolbox will be developed all through Period 1.
+
+### C5. Run the tests you were given
+
+```bash
+pytest -q
+```
+
+**Checkpoint:** pytest runs and reports results. Some stub tests are expected to fail — they describe the code you have not written yet. That failing list is, quite literally, your Lab 1 todo list.
 
 ---
 
 ## Self-check
 
-You are done when all four are true:
+You are done when all five are true:
 
 1. `python --version` in a fresh terminal says 3.11+
 2. You can create, activate and deactivate a venv and explain the `ModuleNotFoundError` in A3
 3. `python pf.py` prints the 10 981 MW line
 4. `git log --oneline` in your scratch folder shows your commit
+5. Your course repository is cloned, its venv installed (C3–C4), and `pytest -q` runs
 
 The scratch folder has served its purpose — keep it or delete it. Lab 1 starts from your real course repository.

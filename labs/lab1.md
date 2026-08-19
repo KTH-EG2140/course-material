@@ -85,4 +85,4 @@ python checks/lab1_check.py
 
 ---
 
-*Pairs and pods: you work at one laptop, in the repository of whichever partner's name comes first alphabetically today — the other partner's repo hosts Lab 2's work (Lab 3 swaps again). Your **pod** — your pair plus one other pair — is formed today and stays together through Period 1 (pairs rotate within it). For the self-paced labs the pod is your first line of support: partner → pod → Discussions → open hours. Both of you must be able to explain every line committed: quiz questions are individual.*
+*Pairs and pods: you work at one laptop, in the repository of whichever partner's name comes first alphabetically today — the other partner's repo hosts Lab 2's work (Lab 3 swaps again). Your **pod** is four people: your pair plus one other pair, formed today and kept through Period 1. Each lab you work in pairs, alternating partners within the pod — same four people, different pairings. For the self-paced labs the pod is your first line of support: partner → pod → Discussions → the TA sessions. Both of you must be able to explain every line committed: quiz questions are individual.*
