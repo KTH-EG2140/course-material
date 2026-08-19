@@ -9,7 +9,7 @@ In the L1 warm-up notebook you (re-)ran a Svedala power flow. That code works â€
 
 ## 0. Get your repository (10 min)
 
-1. Accept the email invitation to the course Github organisation (sent after Lecturecise 1, to the address behind the Github username you gave in the diagnostic). Your personal repository `p1-workbook-<username>` is already there, created from the course template.
+1. Accept the email invitation to your personal repository `p1-workbook-<username>` (sent after Lecturecise 1, to the address behind the Github username you gave in the diagnostic). It is created for you from the course template.
 2. Clone it, create the environment, install:
 
 ```bash
