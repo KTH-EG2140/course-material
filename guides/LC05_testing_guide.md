@@ -8,16 +8,16 @@ You already have tests. Run them and read them:
 
 ```bash
 pytest -q
-pytest -q -v tests/test_loader.py     # -v: see each test's name
+pytest -v tests/test_loader.py     # -v: see each test's name
 ```
 
 A test proves one narrow thing: *this assertion held, on this input, this time.* It does not prove the code is correct — it proves the code has not changed in a way this assertion notices. That is exactly what makes tests valuable when someone else (a lab partner, an AI agent) changes your code: the suite is your tripwire.
 
-Three anatomy rules, visible in `test_loader.py`: one idea per test; a name that states the idea (`test_network_restored_after_screening` reads as a sentence); assertions with messages where failure would otherwise be cryptic.
+Three anatomy rules, visible in `tests/test_loader.py`: one idea per test; a name that states the idea (`test_power_flow_converges` reads as a sentence); assertions with messages where failure would otherwise be cryptic — `test_network_sizes` carries one (`"expected 52 buses, got ..."`); a bare `assert` next to it shows what you get without: just `52 != 51`.
 
 ## Part B — Numerical code needs tolerances (10 min)
 
-Add this test and run it:
+Add this test to `tests/test_loader.py` and run it (the imports it needs — `load_svedala`, `run_power_flow` — are already at the top of that file; if you start a new test file instead, import them yourself):
 
 ```python
 def test_losses_are_small_but_positive():
@@ -34,7 +34,7 @@ Note what it does **not** do: assert `losses == 302.7554`. Floating point, solve
 
 ## Part C — Fixtures and parametrisation (15 min)
 
-Loading Svedala takes seconds; doing it in every test is waste. `tests/test_screener.py` already shows the cure:
+Loading Svedala takes seconds; doing it in every test is waste — and your Lab 2 `tests/test_screener.py` almost certainly screens the network once per test. The cure is a **fixture**. Add this to your `tests/test_screener.py` (plus `import pytest` at the top if it is not there), then refactor your screener tests to take `results` as an argument instead of each computing its own:
 
 ```python
 @pytest.fixture(scope="module")
@@ -42,7 +42,7 @@ def results():
     return screen_n1(load_svedala())
 ```
 
-Every test taking `results` as an argument shares one computed instance. Now parametrisation — one test body, many cases:
+Every test taking `results` as an argument shares one computed instance — `scope="module"` means it is built once for the whole file. Run `pytest -v tests/test_screener.py`: same tests, one screening run instead of several. Now parametrisation — one test body, many cases:
 
 ```python
 @pytest.mark.parametrize("scaling", [0.8, 1.0, 1.05])
@@ -52,15 +52,15 @@ def test_power_flow_converges_across_loadings(scaling):
     assert run_power_flow(net).converged
 ```
 
-Run `pytest -q -v` and watch it appear as three tests. Parametrisation is how you test *behaviour across a range* instead of one lucky point.
+Run `pytest -v` and watch it appear as three named tests (`[0.8]`, `[1.0]`, `[1.05]`). Parametrisation is how you test *behaviour across a range* instead of one lucky point.
 
 ## Part D — Edge cases: where the bugs live (10 min)
 
 The happy path rarely breaks. Test the edges — for our screener the edges are physical:
 
-- **The stressed case**: at what scaling does `run_power_flow` still converge? Write the test that pins the answer (you found the number in Lab 1's extension).
+- **The stressed case**: at what scaling does `run_power_flow` still converge? Find the edge now — raise `net.load.scaling` step by step until `run_power_flow` raises. It comes sooner than you might guess: Part C's 1.05 already sits close to it. Write the test that pins your answer.
 - **The empty case**: what *should* `screen_n1` return for a network where every line is already out of service? Decide, then encode the decision as a test. (Deciding is the point — the test forces the design question.)
-- **The failure path**: `run_power_flow` promises a `RuntimeError` on non-convergence — the promise is in its docstring in `src/svedala_toolbox/loader.py`, and the test holds it to it: `with pytest.raises(RuntimeError): ...` on a hopeless case (`net.load.scaling = 10`).
+- **The failure path**: `run_power_flow` promises a `RuntimeError` on non-convergence — Lab 1 had you write that promise into `src/svedala_toolbox/loader.py`, and the test holds it to it: `with pytest.raises(RuntimeError): ...` on a hopeless case (`net.load.scaling = 10`). If this test fails with pandapower's own exception instead, your Lab 1 code lets it escape unwrapped — fix the loader, not the test.
 - **The invariant after a contingency**: the screener takes elements out of service and must put them back. `net.line.in_service` should be identical before and after a screening run, whatever happened in between — including when a case failed. That is a one-line test, and it catches the single most common screener bug.
 
 The failure-path test is the one that matters most for Period 2: agent-written code habitually *swallows* failure. Your tests are the leash that notices.

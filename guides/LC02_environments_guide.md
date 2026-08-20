@@ -138,6 +138,12 @@ git config --global user.name  "Your Name"
 git config --global user.email "you@kth.se"
 ```
 
+One more line, for everyone (it makes every new repository start on a branch called `main`, which all course instructions assume — some git installs still default to the older name `master`):
+
+```bash
+git config --global init.defaultBranch main
+```
+
 ### B2. Make the folder a repository, and keep the venv out of it
 
 ```bash

@@ -20,6 +20,11 @@ This repository is where the work lives.
 Your own work does not go here. You get a personal repository, `p1-workbook-<your username>`,
 after the day-1 survey, and your project group gets one in Period 2.
 
+The material is updated during the course, so `git pull` your clone now and then. If the pull
+stops with "your local changes would be overwritten" — usually because running a notebook
+modified it in place — run `git restore .` first: it throws away your local runs (your real work
+lives in your own repository, not here) and the pull goes through.
+
 ## Asking questions
 
 Use [Discussions](https://github.com/KTH-EG2140/course-material/discussions). For lab work the

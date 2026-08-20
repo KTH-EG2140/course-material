@@ -38,7 +38,7 @@ One PASS, four FAIL. Those four FAIL lines are this lab's task list.
 Open `src/svedala_toolbox/loader.py`. Two functions carry TODOs — the signatures and docstrings are already sketched in the stub; you write the bodies:
 
 - **`load_svedala()`** — move the loading code from your warm-up notebook into this function: read the five CSVs (`index_col=0`, the indices matter), create the network, add buses, lines, transformers, generators, loads. Keep the current-limit defaults exactly as the stub describes — including the comment saying they are an assumption. Keep the slack flag on the generators.
-- **`run_power_flow()`** — run `pp.runpp` and **raise a `RuntimeError` with a useful message if the power flow does not converge.** A function that returns nonsense quietly is worse than one that stops loudly (this idea gets a whole lecturecise later).
+- **`run_power_flow()`** — run `pp.runpp` and **raise a `RuntimeError` with a useful message if the power flow does not converge.** Careful: pandapower reports non-convergence by raising its own `pp.LoadflowNotConverged` — catch that and re-raise it as your `RuntimeError`. A function that returns nonsense quietly is worse than one that stops loudly (this idea gets a whole lecturecise later).
 
 Working in a module instead of a notebook means: no prints scattered around, no top-level code that runs on import, docstrings kept honest.
 
@@ -84,7 +84,7 @@ python checks/lab1_check.py
 ## Extension (if time remains)
 
 - Delete your `.venv/`, rebuild it from `requirements.txt`, reinstall the package and run the self-check again. Same result, environment thrown away and recreated in a minute — that is what LC2 meant by the recipe being the thing you keep.
-- Add `svedala pf --scaling 1.10` to your experiments: at what scaling does the first line pass 100%? Remember the number — it returns when we generate training data in Module 3.
+- Add `svedala pf --scaling 1.02` to your experiments — the first line just reaches 100%. Then keep raising the scaling in small steps: at what point does the power flow stop converging entirely? Remember both numbers — the edge returns in the LC5 testing session, and scaled cases return when we generate training data in Module 3.
 
 ---
 

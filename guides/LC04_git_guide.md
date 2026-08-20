@@ -4,6 +4,8 @@
 
 Work in a scratch copy — not your toolbox: `mkdir git-practice && cd git-practice && git init`.
 
+*(If `git switch main` below answers `invalid reference: main`: your git names its first branch `master`. Fix it once with `git branch -m main`, and run `git config --global init.defaultBranch main` so every future repo starts on `main`.)*
+
 ## Part A — Branches (10 min)
 
 ```bash
@@ -51,7 +53,17 @@ git add limits.py && git commit -m "Merge add-220kv, keep updated 400 kV value"
 
 *Switch back to your **toolbox repository** for this part — not the `git-practice` scratch folder. The scratch folder has no remote on GitHub, and a pull request needs one.*
 
-Push a branch of your *toolbox* repo and open a Pull Request on GitHub (base: `main`, compare: your branch). Look at what the PR page gives you: the **diff** (exactly what would change), a place to **comment on any line**, and a **merge button that can wait**. That gap — between "code exists" and "code is accepted" — is where review lives. Every lab from now on merges through it, and in Period 2 it is where you will catch what the AI got wrong.
+Make a branch with any small change and push it:
+
+```bash
+git switch -c lc04-practice
+# touch up a docstring or a comment somewhere, then:
+git add -A
+git commit -m "Docstring touch-up (LC4 PR practice)"
+git push -u origin lc04-practice   # -u: a branch's FIRST push must name its remote home
+```
+
+(Plain `git push` on a new branch stops with `fatal: ... has no upstream branch` — that is what `-u origin <branch>` is for; you need it once per branch.) Now open a Pull Request on GitHub (base: `main`, compare: `lc04-practice`). Look at what the PR page gives you: the **diff** (exactly what would change), a place to **comment on any line**, and a **merge button that can wait**. That gap — between "code exists" and "code is accepted" — is where review lives. Every lab from now on merges through it, and in Period 2 it is where you will catch what the AI got wrong.
 
 Two habits that make PRs reviewable: small (one intent per PR) and described (what + why in the description, so the reviewer isn't reverse-engineering you).
 
@@ -63,14 +75,24 @@ The course rule, from here to the end: **anything you did not write gets attribu
 
 Lab 3 asks you to find a bug in a 13-commit history. `git bisect` does that by binary search: you tell it one commit where the code was fine and one where it is broken, and it checks out the middle one for you, over and over, until one commit is left.
 
-Try the mechanism once here, in the scratch repo, where you know the answer. Make five commits, breaking something in the middle:
+Try the mechanism once here, in the scratch repo, where you know the answer. Go back to the `git-practice` folder from Part A (from your toolbox repo that is typically `cd ../git-practice`) and make five commits — one of them quietly breaks the limit value, and the messages are deliberately useless, exactly like Lab 3's:
 
 ```bash
-cd git-practice
-for i in 1 2 3 4 5; do echo "line $i" >> notes.txt; git add notes.txt; git commit -qm "commit $i"; done
+echo "2.1" > limit.txt
+git add limit.txt
+git commit -qm "set the 400 kV limit"
+echo "note 1" >> notes.txt
+git add notes.txt
+git commit -qm "tidy formatting"
+echo "21" > limit.txt
+git commit -aqm "tidy formatting"
+echo "note 2" >> notes.txt
+git commit -aqm "tidy formatting"
+echo "note 3" >> notes.txt
+git commit -aqm "tidy formatting"
 ```
 
-Now say that the newest commit is bad and the oldest is good, and mark each step by hand:
+The limit silently became 21 somewhere in the middle — pretend you just discovered that and do not know when. Tell git the newest commit is bad and the oldest good, then judge each commit it checks out by looking at the file (`cat limit.txt` — 2.1 is good, 21 is bad):
 
 ```bash
 git bisect start HEAD HEAD~4     # bad = now, good = four commits back
@@ -79,7 +101,7 @@ git bisect good                  # or: git bisect bad - for the commit git check
 git bisect reset                 # always: leaves bisect mode, back to your branch
 ```
 
-When a test can decide for you, git does the whole search on its own — this is the form you use in Lab 3:
+Git names the first bad commit — check it is the `21` one (`git show <hash>`), and notice how little the message helped. When a test can decide good/bad for you, git does the whole search on its own. **Just read this form for now** — it is what you use in Lab 3, where the history has tests (here it would mark every commit bad):
 
 ```bash
 git bisect start HEAD HEAD~11
@@ -95,5 +117,5 @@ git bisect reset
 
 1. You resolved the Part B conflict and the file keeps both changes
 2. You opened (not necessarily merged) one real PR on your toolbox repo
-3. You ran a bisect session to the end, including `git bisect reset`
-3. You can explain what `<<<<<<<` / `=======` / `>>>>>>>` delimit
+3. You ran a bisect session to the end, including `git bisect reset`, and it named the `21` commit
+4. You can explain what `<<<<<<<` / `=======` / `>>>>>>>` delimit

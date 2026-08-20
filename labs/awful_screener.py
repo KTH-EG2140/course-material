@@ -53,9 +53,9 @@ for i in range(len(x)):
                 print("DANGER!!",n.line.at[j,"name"],w,v2)
             else:
                 print("ok",n.line.at[j,"name"],w)
+            n.line.at[j,"in_service"]=True
         except:
             pass
-        n.line.at[j,"in_service"]=True
 print("klart, worst:")
 tmp = 0
 tmp2 = ""

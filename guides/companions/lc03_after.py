@@ -15,6 +15,7 @@ def zone_load_totals(scaling: float = 1.0, data_dir: Path = DATA_DIR) -> pd.Seri
     """
     if scaling <= 0:
         raise ValueError(f"scaling must be positive, got {scaling}")
+    data_dir = Path(data_dir)   # accept plain strings too — normalise at the boundary
     loads = pd.read_csv(data_dir / "loads.csv", index_col=0)
     buses = pd.read_csv(data_dir / "buses.csv", index_col=0)
     zones = loads["bus"].map(buses["SubGeographicalRegion_name"])
