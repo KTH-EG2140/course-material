@@ -17,7 +17,8 @@ git clone <your-repo-url>
 cd p1-workbook-<you>
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -r requirements.txt      # installs deps + the package itself, editable
+pip install -r requirements.txt      # the dependencies
+pip install -e .                     # your own package, editable
 ```
 
 3. Look around. The layout is the one from LC2, with three things already in place: a **stubbed package** in `src/svedala_toolbox/`, a **test suite** in `tests/` (one test passing, two waiting for your code), and a **self-check** in `checks/`.
@@ -28,7 +29,9 @@ Run the self-check now, before writing anything:
 python checks/lab1_check.py
 ```
 
-One PASS, four FAIL. Those four FAIL lines are this lab's task list. *(Laptop trouble? Press the green Code button on GitHub → Codespaces → everything above is already done for you in the browser.)*
+One PASS, four FAIL. Those four FAIL lines are this lab's task list.
+
+`checks/lab1_check.py` is a thin wrapper: it runs the same tests `pytest -q` runs and prints them as a task list, so you can see at a glance what is left. Use either — the counts describe the same tests. *(Laptop trouble? Say so at the start of the session; that is what the session is for.)*
 
 ## 1. Port the loader (30 min)
 
@@ -80,7 +83,7 @@ python checks/lab1_check.py
 
 ## Extension (if time remains)
 
-- Open `.devcontainer/devcontainer.json` and read it against what LC2's Part C claimed. Then prove it: open your repo in Codespaces and run the self-check there — same result, machine you never configured.
+- Delete your `.venv/`, rebuild it from `requirements.txt`, reinstall the package and run the self-check again. Same result, environment thrown away and recreated in a minute — that is what LC2 meant by the recipe being the thing you keep.
 - Add `svedala pf --scaling 1.10` to your experiments: at what scaling does the first line pass 100%? Remember the number — it returns when we generate training data in Module 3.
 
 ---

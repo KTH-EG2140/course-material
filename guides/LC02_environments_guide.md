@@ -203,6 +203,8 @@ pytest -q
 
 **Checkpoint:** pytest runs and reports results. Some stub tests are expected to fail — they describe the code you have not written yet. That failing list is, quite literally, your Lab 1 todo list.
 
+Your repository also contains `checks/lab1_check.py`. It runs the same tests and prints them as a task list rather than as test output; Lab 1 starts by running it. Both tools look at the same tests, so the two views always agree.
+
 ---
 
 ## Self-check
