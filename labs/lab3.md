@@ -8,7 +8,7 @@ Two exercises: first you collide with your partner on purpose and clean it up; t
 
 ## 1. The staged collision (60 min)
 
-Both of you work in the host's repo — the second partner accepts the collaboration invite (host: Settings → Collaborators).
+Both of you work in the host's repo — no invitation needed: every student has push on every workbook repo.
 
 1. **Branch out.** From an up-to-date `main`, each partner creates a branch on their own laptop: `feature/load-scaling` (adds a `--scaling` sanity guard and prints the applied factor in `cmd_pf`) and `feature/result-export` (adds `svedala pf --out results.csv` writing the line results). Both branches will touch `cli.py` — that is the point.
 2. **Commit and push both branches.** Small commits, honest messages.

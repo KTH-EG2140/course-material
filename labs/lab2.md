@@ -1,6 +1,6 @@
 # Lab 2 — Refactor the N-1 screener + pod check
 
-*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: the partner whose name comes FIRST alphabetically (Lab 3 swaps). No AI tools.*
+*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: the partner whose name comes FIRST alphabetically (Lab 3 swaps) — both of you can push to it, every student has push on every workbook repo. No AI tools.*
 
 Someone left the course a gift: `awful_screener.py` — an N-1 screener that **works**. It produces correct numbers. It is also unreadable, untestable, and one keystroke from disaster. Yesterday you refactored a 20-line version of this problem together; today's is 70 lines, and it is for keeps: the result becomes `svedala_toolbox/screener.py`, a permanent part of your package.
 
@@ -55,7 +55,7 @@ systems are studied at such points precisely to find their limits; nobody would
 
 ## 3. Pod check (20 min)
 
-Swap with the other pair in your pod (org access — open their repo on GitHub). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo (open an Issue titled "Lab 2 pod check"): one thing done well, one concrete improvement, one question. Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
+Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo (open an Issue titled "Lab 2 pod check"): one thing done well, one concrete improvement, one question. Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
 
 ## Done when
 

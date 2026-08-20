@@ -19,7 +19,7 @@ The rules, in this order:
 
 ## Plant your own (last 10 min)
 
-Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod: push it as a branch `lab4/planted-bug` in *their* host repo. (Their host adds one of you as a collaborator first — Settings → Collaborators, the same flow as Lab 3.) Best planted bug of the day gets named in the next lecturecise.
+Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod: push it as a branch `lab4/planted-bug` directly in *their* host repo (everyone in the course has push on every workbook repo). Two rules of the game: the planted code carries **no comment, marker or hint** pointing at the bug, and the commit message reveals nothing — "update summary script" is perfect. Yes, that inverts step 4's rule: honest messages for fixes, poker face for planted bugs. Best planted bug of the day gets named in the next lecturecise.
 
 ## Done when
 

@@ -1,6 +1,6 @@
 # Lab 5 — Acquire, clean, store: a data pipeline in the toolbox
 
-*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → open hours) · ~110 min · host repo: alternate as usual. Quiz 2 at its sitting reads Lecturecises 6–7 and this lab's working method. No AI tools.*
+*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: alternate as usual. Quiz 2 at its sitting reads Lecturecises 6–7 and this lab's working method. No AI tools.*
 
 Lecturecises 6 and 7 did this in a notebook. A notebook is where analysis is *found*; the toolbox is where it goes to *live*. This lab moves the pattern into `svedala_toolbox` as tested, rerunnable code.
 
