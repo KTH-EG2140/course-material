@@ -60,7 +60,8 @@ The happy path rarely breaks. Test the edges — for our screener the edges are 
 
 - **The stressed case**: at what scaling does `run_power_flow` still converge? Write the test that pins the answer (you found the number in Lab 1's extension).
 - **The empty case**: what *should* `screen_n1` return for a network where every line is already out of service? Decide, then encode the decision as a test. (Deciding is the point — the test forces the design question.)
-- **The failure path**: `run_power_flow` promises a `RuntimeError` on non-convergence. Promises need tests too: `with pytest.raises(RuntimeError): ...` on a hopeless case (`net.load.scaling = 10`).
+- **The failure path**: `run_power_flow` promises a `RuntimeError` on non-convergence — the promise is in its docstring in `src/svedala_toolbox/loader.py`, and the test holds it to it: `with pytest.raises(RuntimeError): ...` on a hopeless case (`net.load.scaling = 10`).
+- **The invariant after a contingency**: the screener takes elements out of service and must put them back. `net.line.in_service` should be identical before and after a screening run, whatever happened in between — including when a case failed. That is a one-line test, and it catches the single most common screener bug.
 
 The failure-path test is the one that matters most for Period 2: agent-written code habitually *swallows* failure. Your tests are the leash that notices.
 
