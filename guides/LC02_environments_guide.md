@@ -22,7 +22,7 @@ python --version
 
 *Hints: the two commands above work in both bash and PowerShell, one line at a time. If `python` is not found, try `python3` (macOS/Linux) or `py` (Windows). You can also create the folder in your file manager and use "Open in Terminal" / "Open PowerShell window here".*
 
-**Checkpoint:** version 3.11 or higher.
+**Checkpoint:** version 3.11 or higher. Newer is fine too — anything 3.11+ works for this course.
 *If you see 2.x or "command not found": your PATH points at the wrong Python — ask now.*
 
 ### A2. Create a virtual environment
@@ -58,10 +58,14 @@ Now see what "into the venv" means:
 
 ```bash
 deactivate
-python -c "import pandapower"    # this should FAIL
+python -c "import pandapower"    # for most of you this FAILS
 ```
 
-**Checkpoint:** `ModuleNotFoundError`. That failure is the whole point: the package lives inside `.venv`, nowhere else. Reactivate (same command as in A2).
+**Checkpoint:** `ModuleNotFoundError`. That failure is the whole point: the package lives inside `.venv`, nowhere else.
+
+*Did the import succeed instead of failing? Then your system Python already had pandapower (Anaconda installs a lot of things). Your venv still isolates — prove it by running `python -c "import pandapower; print(pandapower.__file__)"` now and again after reactivating: the path changes to one inside `.venv`. That path difference is the same point, made on a machine with a crowded system Python.*
+
+Reactivate (same command as in A2).
 
 ### A4. Freeze what you depend on
 
@@ -78,14 +82,14 @@ cat requirements.txt               # macOS / Linux
 type requirements.txt              # Windows
 ```
 
-**Checkpoint:** a list of packages with pinned versions. This file *is* reproducibility: anyone (including future-you, and the CI robot you meet in Lab 1) can rebuild your exact environment with `pip install -r requirements.txt`.
+**Checkpoint:** a list of packages with pinned versions. This file *is* reproducibility: anyone (including future-you, and the CI robot you meet in Lab 1 — CI is a machine that reruns your tests on every push) can rebuild your exact environment with `pip install -r requirements.txt`.
 
-### A5. Prove it — the five-line power flow
+### A5. Prove it — five lines, same number on every laptop
 
 Create a file `pf.py` with your editor:
 
 ```python
-import pandas as pd, pandapower as pp
+import pandas as pd
 
 url = "https://raw.githubusercontent.com/KTH-EPE/CIM_exportimport/main/Svedala_csv/loads.csv"
 loads = pd.read_csv(url, index_col=0)
@@ -97,7 +101,7 @@ python pf.py
 ```
 
 **Checkpoint:** `Svedala has 60 loads totalling 10981 MW`.
-Same number on every laptop in the room — that is what "reproducible" means.
+Same number on every laptop in the room — that is what "reproducible" means. (The script needs internet; if the download fails, tell a TA — the same file also ships inside your Lab 1 repository.)
 
 ### A6. How a small project is laid out
 
@@ -107,7 +111,7 @@ You just made the pieces by hand. A real small Python project arranges them like
 project/
 ├── .venv/              never committed (see .gitignore below)
 ├── requirements.txt    committed — this is the environment
-├── src/<package>/      the code you keep
+├── src/<package>/      the code you keep (in Lab 1: src/svedala_toolbox/)
 ├── tests/              the proof it works
 └── README.md           how to run it
 ```
@@ -119,6 +123,15 @@ project/
 Full git comes in Lecturecise 4. Today: the four commands that let you save work in Lab 1. Still in `eg2140-scratch`:
 
 ### B1. Tell git who you are (once per machine)
+
+First check whether it is already set — if you have used git before, it is:
+
+```bash
+git config --global user.name
+git config --global user.email
+```
+
+If both print something sensible, **leave them alone** (especially the email your GitHub account knows). If they are empty:
 
 ```bash
 git config --global user.name  "Your Name"
@@ -160,20 +173,21 @@ Lab 1 assumes the steps below are already done, so that the session is spent bui
 
 ### C1. Accept the invitation
 
-Check your KTH mail for a GitHub invitation to your personal repository `p1-workbook-<your username>` (sent after the day-1 survey). Accept it and log in on github.com so you can see the repository.
+Check your KTH mail for a GitHub invitation to your personal repository `p1-workbook-<your GitHub username>` (sent within a day after the day-1 survey). Accept it and log in on github.com so you can see the repository.
 
 **Checkpoint:** you can open your repository page in the browser.
+*No invitation a day after the survey? Post on Discussions — do not wait until the lab.*
 
 ### C2. Clone it
 
 In the folder where you keep course work (not inside `eg2140-scratch`):
 
 ```bash
-git clone https://github.com/KTH-EG2140/p1-workbook-<your username>.git
-cd p1-workbook-<your username>
+git clone https://github.com/KTH-EG2140/p1-workbook-<your GitHub username>.git
+cd p1-workbook-<your GitHub username>
 ```
 
-*If git asks you to authenticate, follow its browser prompt (first time only).*
+*If git asks you to authenticate, follow its browser prompt (first time only). A trap worth knowing: GitHub answers `Repository not found` both when a repository does not exist AND when you are not logged in as someone allowed to see it — so that message usually means "authentication problem" or "invitation not accepted yet", not "the repo is missing".*
 
 ### C3. Environment, from the recipe this time
 
@@ -212,7 +226,7 @@ Your repository also contains `checks/lab1_check.py`. It runs the same tests and
 You are done when all five are true:
 
 1. `python --version` in a fresh terminal says 3.11+
-2. You can create, activate and deactivate a venv and explain the `ModuleNotFoundError` in A3
+2. You can create, activate and deactivate a venv and explain what A3 demonstrated (the failed import — or the changed module path)
 3. `python pf.py` prints the 10 981 MW line
 4. `git log --oneline` in your scratch folder shows your commit
 5. Your course repository is cloned, its venv installed (C3–C4), and `pytest -q` runs
