@@ -49,6 +49,8 @@ git add limits.py && git commit -m "Merge add-220kv, keep updated 400 kV value"
 
 ## Part C — Pull requests: the review mechanism (10 min, on GitHub)
 
+*Switch back to your **toolbox repository** for this part — not the `git-practice` scratch folder. The scratch folder has no remote on GitHub, and a pull request needs one.*
+
 Push a branch of your *toolbox* repo and open a Pull Request on GitHub (base: `main`, compare: your branch). Look at what the PR page gives you: the **diff** (exactly what would change), a place to **comment on any line**, and a **merge button that can wait**. That gap — between "code exists" and "code is accepted" — is where review lives. Every lab from now on merges through it, and in Period 2 it is where you will catch what the AI got wrong.
 
 Two habits that make PRs reviewable: small (one intent per PR) and described (what + why in the description, so the reviewer isn't reverse-engineering you).
@@ -57,8 +59,41 @@ Two habits that make PRs reviewable: small (one intent per PR) and described (wh
 
 The course rule, from here to the end: **anything you did not write gets attributed.** A copied function gets a comment with its source and license; a dependency gets a `requirements.txt` line; in Period 2, agent-generated code gets a decision-log entry. Licensing is not decoration — your project repos will be published, and unattributed code is the one thing that blocks publication.
 
+## Part E — Finding the commit that broke it (10 min)
+
+Lab 3 asks you to find a bug in a 13-commit history. `git bisect` does that by binary search: you tell it one commit where the code was fine and one where it is broken, and it checks out the middle one for you, over and over, until one commit is left.
+
+Try the mechanism once here, in the scratch repo, where you know the answer. Make five commits, breaking something in the middle:
+
+```bash
+cd git-practice
+for i in 1 2 3 4 5; do echo "line $i" >> notes.txt; git add notes.txt; git commit -qm "commit $i"; done
+```
+
+Now say that the newest commit is bad and the oldest is good, and mark each step by hand:
+
+```bash
+git bisect start HEAD HEAD~4     # bad = now, good = four commits back
+git bisect good                  # or: git bisect bad - for the commit git checks out
+...                              # git narrows it down; two or three answers is enough
+git bisect reset                 # always: leaves bisect mode, back to your branch
+```
+
+When a test can decide for you, git does the whole search on its own — this is the form you use in Lab 3:
+
+```bash
+git bisect start HEAD HEAD~11
+git bisect run python -m pytest -q
+git bisect reset
+```
+
+**Checkpoint:** you have seen `start`, `good`/`bad`, `run` and `reset` once. Five commits take a minute; thirteen take four steps instead of thirteen.
+
+*Reading: Pro Git, "Debugging with Git" (in the Git Tools chapter) — https://git-scm.com/book/en/v2/Git-Tools-Debugging-with-Git*
+
 ## Self-check
 
 1. You resolved the Part B conflict and the file keeps both changes
 2. You opened (not necessarily merged) one real PR on your toolbox repo
+3. You ran a bisect session to the end, including `git bisect reset`
 3. You can explain what `<<<<<<<` / `=======` / `>>>>>>>` delimit
