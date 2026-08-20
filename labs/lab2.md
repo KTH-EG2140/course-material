@@ -1,12 +1,12 @@
 # Lab 2 — Refactor the N-1 screener + pod check
 
-*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → open hours) · ~110 min · host repo: the partner whose name comes FIRST alphabetically (Lab 3 swaps). No AI tools.*
+*EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: the partner whose name comes FIRST alphabetically (Lab 3 swaps). No AI tools.*
 
 Someone left the course a gift: `awful_screener.py` — an N-1 screener that **works**. It produces correct numbers. It is also unreadable, untestable, and one keystroke from disaster. Yesterday you refactored a 20-line version of this problem together; today's is 70 lines, and it is for keeps: the result becomes `svedala_toolbox/screener.py`, a permanent part of your package.
 
 ## 0. Meet the patient (15 min)
 
-Get the file and the reference results from the course material (`labs/` folder), drop both in your repo root, and run it:
+Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder), drop both in your repo root, and run it:
 
 ```bash
 python awful_screener.py

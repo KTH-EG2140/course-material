@@ -4,7 +4,7 @@
 
 Two exercises: first you collide with your partner on purpose and clean it up; then you play detective in a repository where something broke, nobody knows when.
 
-**Before you start:** Lab 2 should be merged and passing in the host repo. The two branches in section 1 extend the CLI you built there (`cmd_pf` in `cli.py`), and the bisect commands in section 2 are the ones from Part E of the LC4 guide.
+**Before you start:** Lab 2 should be merged and passing in the host repo. The two branches in section 1 extend the CLI you built there (`cmd_pf` in `cli.py`), and the bisect commands in section 2 are the ones from Part E of the LC4 guide. Section 2 needs [bisect-practice.zip](bisect-practice.zip) from the course material — download it now.
 
 ## 1. The staged collision (60 min)
 
@@ -18,7 +18,7 @@ Both of you work in the host's repo — the second partner accepts the collabora
 
 ## 2. Git archaeology (40 min)
 
-Download `bisect-practice.zip` from the course material, unzip, `cd bisect-practice`. Run `pytest -q`: **one test fails.** It passed once — some commit in this 13-commit history broke it, and the commit messages are no help (read them; that is realistic).
+Unzip [bisect-practice.zip](bisect-practice.zip) (downloaded at the start), `cd bisect-practice`. Run `pytest -q`: **one test fails.** It passed once — some commit in this 13-commit history broke it, and the commit messages are no help (read them; that is realistic).
 
 Find the guilty commit two ways:
 

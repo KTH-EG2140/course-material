@@ -3,7 +3,7 @@
 *EG2140 · in pairs (assigned at the start of the session) · ~110 minutes.
 Goal: turn code you already understand into software someone else could use.*
 
-In the L1 warm-up notebook you (re-)ran a Svedala power flow. That code works — but it lives in a notebook: not installable, not testable, not reviewable. Today you turn it into a package. **The power-flow logic is not the work; the engineering around it is.** No AI coding tools.
+In the LC1 warm-up notebook — [notebooks/LC01_svedala_warmup.ipynb](../notebooks/LC01_svedala_warmup.ipynb), the one from the first session — you (re-)ran a Svedala power flow. That code works — but it lives in a notebook: not installable, not testable, not reviewable. Today you turn it into a package. **The power-flow logic is not the work; the engineering around it is.** No AI coding tools.
 
 ---
 
@@ -35,7 +35,7 @@ One PASS, four FAIL. Those four FAIL lines are this lab's task list.
 
 ## 1. Port the loader (30 min)
 
-Open `src/svedala_toolbox/loader.py`. Two functions carry TODOs:
+Open `src/svedala_toolbox/loader.py`. Two functions carry TODOs — the signatures and docstrings are already sketched in the stub; you write the bodies:
 
 - **`load_svedala()`** — move the loading code from your warm-up notebook into this function: read the five CSVs (`index_col=0`, the indices matter), create the network, add buses, lines, transformers, generators, loads. Keep the current-limit defaults exactly as the stub describes — including the comment saying they are an assumption. Keep the slack flag on the generators.
 - **`run_power_flow()`** — run `pp.runpp` and **raise a `RuntimeError` with a useful message if the power flow does not converge.** A function that returns nonsense quietly is worse than one that stops loudly (this idea gets a whole lecturecise later).
