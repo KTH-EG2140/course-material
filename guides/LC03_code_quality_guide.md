@@ -33,7 +33,34 @@ A clean `FileNotFoundError` with the path in it. The bare except would have prin
 - **Fail loudly.** No bare `except:`, ever. Catch the *specific* exception you can actually handle; let the rest crash with a good message.
 - **Validate at the boundary.** `zone_load_totals` rejects `scaling <= 0` with a `ValueError` *saying what it got*. Garbage stopped at the door beats garbage in the results.
 - **Raise with information.** Compare `raise KeyError(f"loads reference buses without a zone: {missing}")` with `raise KeyError`. Same line count; one is a bug report, the other a shrug.
-- **Log, don't print.** Prints inside functions pollute every caller. Return values; let `__main__` do the printing. (Proper `logging` arrives with the project.)
+- **Log, don't print.** Prints inside functions pollute every caller. Return values; let `__main__` do the printing. When a function does need to say something, that is what `logging` is for.
+
+### B4. One line of logging (3 min)
+
+The lecture covered `logging`: a module asks for a logger named after itself and never configures anything; the program that runs it decides where messages go. Do it once here, so the idea is in your fingers before Lab 2.
+
+Add at the top of `lc03_after.py`:
+
+```python
+import logging
+
+log = logging.getLogger(__name__)
+```
+
+Add one line inside `zone_load_totals`, just before the `return`:
+
+```python
+    log.debug("zone totals computed for %d loads, scaling=%s", len(loads), scaling)
+```
+
+Then run it twice — once as it is, once asking to see debug messages:
+
+```bash
+python lc03_after.py
+python -c "import logging; logging.basicConfig(level=logging.DEBUG); import lc03_after; print(lc03_after.zone_load_totals().round(0))"
+```
+
+**Checkpoint:** the first run prints only the report; the second also prints the debug line, with no change to the function itself. That separation — the module produces messages, the program decides what to show — is the whole point.
 
 ## Part C — Notebooks vs modules (5 min)
 
