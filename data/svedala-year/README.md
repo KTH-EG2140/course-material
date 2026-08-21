@@ -13,6 +13,6 @@ sites Luleå/Stockholm/Malmö). Timestamps UTC.
 
 Used by: Lab 6 (SSH assembly — see `ssh_week/`), Lab 7 (SARIMA), Lab 8
 (security labels come from YOUR screener, not this file), Lab 9 (forecast
-comparison with temperature covariate), LC9 (OPF cases).
+comparison with temperature covariate).
 
 Regenerate: `tooling/d6/` — fetch_entsoe.py → build_dataset.py → generate_ssh.py.

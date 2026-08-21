@@ -2,7 +2,7 @@
 
 *EG2140 · **self-paced** — with your lab partner during the week; pod as first support · ~110 min. Quiz 3 at its sitting covers Lecturecises 8–10. No AI tools.*
 
-Lecturecise 10 built the baseline on the course series; this lab makes it **yours**: same working method, your own Lab 6 series (fall back to the course parquet if your Lab 6 series has gaps — say so in the README). This baseline is the bar that every learner in Module 3 must clear, so treat the evaluation as the deliverable.
+Lecturecise 9 built the baseline on the course series; this lab makes it **yours**: same working method, your own Lab 6 series (fall back to the course parquet if your Lab 6 series has gaps — say so in the README). This baseline is the bar that every learner in Module 3 must clear, so treat the evaluation as the deliverable.
 
 ## 1. Persistence first (~20 min)
 Implement `persistence(y, horizon=24)` and `walk_forward(y, model_fn, test_start, test_end, horizon=24)` in `evaluation.py` (stubs provided). Walk-forward means: forecast a day, reveal it, continue — never refit on the future. Test the harness on a toy series where you know the answer.

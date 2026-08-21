@@ -50,8 +50,8 @@ systems are studied at such points precisely to find their limits; nobody would
 
 1. If you were the operator handed this screener output, what would you do first?
 2. How much load do you think Svedala *can* serve N-1 securely? Guess a
-   percentage — the course answers this properly with optimisation in
-   Lecturecise 9, and your screener will be the judge.
+   percentage and note it — scaled cases return in Module 3, and your
+   screener will be the judge.
 
 ## 3. Pod check (20 min)
 
