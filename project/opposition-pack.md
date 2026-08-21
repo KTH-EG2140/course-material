@@ -22,8 +22,10 @@ Each round, post exactly three questions as an issue titled "Opposition round N 
 
 ## In the session
 
+The session is recorded on the one-page form in [opposition-form.md](opposition-form.md): the questions as posted, the answers given, the follow-ups, and at most three concrete takeaways agreed by both groups. The opposing group fills it in and the opposed group gets a copy.
+
 The opposing group leads: restate each question briefly, let the opposed group answer, follow up once. The opposed group answers from the tagged state — "we fixed that yesterday" is a fine remark but the discussion concerns the tag. Everyone else listens; the best follow-up question from the audience is welcome in the last minutes.
 
 ## What is assessed
 
-Opposition earns up to 2 points per round (6 of the 28 project points): substantive questions posted on time, active and constructive participation in the session, and answers grounded in your own repository when you are opposed. MANDATORY attendance: all three rounds are gates for course completion.
+Opposition earns up to 2 points per round, 6 of the 36 grade points: substantive questions posted on time, active and constructive participation in the session, and answers grounded in your own repository when you are opposed. MANDATORY attendance: all three rounds are gates for course completion.
