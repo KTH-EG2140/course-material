@@ -100,6 +100,8 @@ print(f"Svedala has {len(loads)} loads totalling {loads.p_mw.sum():.0f} MW")
 python pf.py
 ```
 
+One detail worth registering now: `index_col=0` is not cosmetic — the first CSV column holds each element's ID, and the other Svedala tables refer to elements *by* those IDs, so they must become the DataFrame's index rather than ordinary data (your Lab 1 loader reads all five tables exactly this way).
+
 **Checkpoint:** `Svedala has 60 loads totalling 10981 MW`.
 Same number on every laptop in the room — that is what "reproducible" means. (The script needs internet; if the download fails, tell a TA — the same file also ships inside your Lab 1 repository.)
 
