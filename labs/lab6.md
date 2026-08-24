@@ -1,6 +1,6 @@
 # Lab 6 — From CIMXML to an hourly load series
 
-*EG2140 · **self-paced** — with your lab partner during the week; pod as first support · ~110 min · host repo: alternate. Quiz 3 covers Lecturecises 8–10; this lab is the CIM part in practice. No AI tools.*
+*EG2140 · **self-paced** — with your lab partner during the week; pod as first support · ~110 min · host repo: alternate. Quiz 3 covers Lecturecises 8–9; this lab is the CIM part in practice. No AI tools.*
 
 Lecturecise 8 read one SSH file by hand. This lab industrialises it: parse the Svedala EQ once, then turn the 168 timestamped SSH snapshots in `data/svedala-year/ssh_week.zip` into a tidy hourly **zonal** load DataFrame — the SCADA-side twin of the market data you fetched in Lab 5.
 

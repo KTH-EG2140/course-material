@@ -1,6 +1,6 @@
 # Lab 8 — Classify N-1 security: milliseconds instead of minutes
 
-*EG2140 · **self-paced** — with your lab partner during the week; pod as first support · ~110 min. Quiz 4 at its sitting covers Lecturecises 11–13. No AI tools.*
+*EG2140 · **self-paced** — with your lab partner during the week; pod as first support · ~110 min. Quiz 4 at its sitting covers Lecturecises 10–12. No AI tools.*
 
 Your screener answers "is this operating point N-1 secure?" in minutes of power flows. An operator screening thousands of scenarios wants the answer in milliseconds. This lab trains classifiers to approximate your screener — and, more importantly, teaches you to decide **when to trust which**.
 

@@ -11,7 +11,7 @@ Pull the latest template stubs if your repo predates them (`src/svedala_toolbox/
 Implement `fetch_load(zone, start, end, cache_dir)` in `pipeline.py` following the LC6 pattern: Parquet cache, JSON provenance sidecar, token from file/env — never from source code. Your test must pass **without** a token (cache a small sample and commit it under `tests/data/`; the test reads the cache).
 
 ## 2. Clean, with a repairs log (~40 min)
-Implement `clean_load(series) -> (series, repairs)` doing, in order: UTC index enforcement, de-duplication, impossible-value removal (negative, > 3× rolling median), interpolation of gaps ≤ 3 h. `repairs` is a list of human sentences — the LC7 habit. **Decide and document**: what does your function do with a 72-hour gap, and why?
+Implement `clean_load(series) -> (series, repairs)` doing, in order: UTC index enforcement, de-duplication, impossible-value removal (negative values, and spikes further than 4 standard deviations from a 49-hour centred rolling median — the LC7 rule), interpolation of gaps ≤ 3 h. `repairs` is a list of human sentences — the LC7 habit. **Decide and document**: what does your function do with a 72-hour gap, and why?
 
 ## 3. Store and query (~25 min)
 `store(series, db_path)` writes Parquet and registers it in a DuckDB database. Add one query function the pair designs itself (daily peaks, morning ramp, weekend/weekday means — your choice) and use it in a short demo in your README.
