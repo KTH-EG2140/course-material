@@ -227,6 +227,53 @@ Your repository also contains `checks/lab1_check.py`. It runs the same tests and
 
 ---
 
+## Part D — Docker, for reference only (5 min, optional)
+
+**Nothing in Period 1 requires this, and no lab or quiz asks about it.** Read it once so you
+know the option exists; come back to it in Period 2 if your project ever needs it.
+
+A virtual environment freezes your *packages*. It does not freeze the Python version, the
+operating system, or the compiled libraries underneath — and those do occasionally decide
+whether numerical code produces the same answer. A container freezes all of it: the whole
+machine, described in a text file, rebuilt identically anywhere.
+
+The description lives in a file called `Dockerfile`. This one is enough for a course project:
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /work
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["python", "pf.py"]
+```
+
+Read it as five instructions rather than as code: start from a machine that has Python 3.11 and
+little else; work in `/work`; copy the recipe in and install from it; copy the project in; and
+when the container starts, run this. The recipe is copied *before* the project on purpose — the
+install step is then re-used unchanged whenever only your own code has changed, which is what
+makes rebuilds fast.
+
+If you have Docker Desktop installed, from your scratch folder:
+
+```bash
+docker build -t svedala .        # build the image, once per change to the recipe
+docker run --rm svedala          # run pf.py inside it, then throw the container away
+```
+
+You should see the same 10 981 MW line as in A5 — this time from a machine that did not exist a
+minute ago and will not exist a minute from now.
+
+**Where this actually matters in this course:** in Period 2, if your group's results depend on a
+version you cannot get everyone to install, or if the challenge partner needs to run what you
+built without a call to explain it. That is the point at which a `Dockerfile` in the repository
+is worth the twenty minutes. Not before.
+
+Installing Docker Desktop is a large download and needs administrator rights, so do not do it
+today unless you already have it. https://docs.docker.com/get-started/
+
+---
+
 ## Self-check
 
 You are done when all five are true:
