@@ -28,4 +28,4 @@ The opposing group leads: restate each question briefly, let the opposed group a
 
 ## What is assessed
 
-Opposition earns up to 2 points per round, 6 of the 36 grade points: substantive questions posted on time, active and constructive participation in the session, and answers grounded in your own repository when you are opposed. MANDATORY attendance: all three rounds are gates for course completion.
+Opposition earns up to 2 points per round, 6 of the 31 grade points: substantive questions posted on time, active and constructive participation in the session, and answers grounded in your own repository when you are opposed. MANDATORY attendance: all three rounds are gates for course completion.
