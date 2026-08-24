@@ -1,5 +1,5 @@
 {
-  "source": "SYNTHETIC PROXY — replace via fetch_entsoe.py",
+  "source": "ENTSO-E Transparency (realised load A65/A16)",
   "zone_map": {
     "ZON_NORR": "SE1+SE2",
     "ZON_MITT": "SE3",
@@ -8,12 +8,12 @@
   },
   "k": 0.5,
   "calib_shares": {
-    "0.46": 0.03333333333333333,
-    "0.5": 0.2,
+    "0.46": 0.16666666666666666,
+    "0.5": 0.23333333333333334,
     "0.53": 0.3333333333333333,
     "0.56": 0.5333333333333333
   },
-  "verified_insecure_share": 0.16666666666666666,
+  "verified_insecure_share": 0.2708333333333333,
   "hours": 8760,
   "zone_base_mw": {
     "ZON_EXTERN": 2300.0,

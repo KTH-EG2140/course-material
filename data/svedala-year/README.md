@@ -2,10 +2,10 @@
 
 One year of hourly zonal load on the Svedala grid, with temperature covariates.
 
-**Source:** SYNTHETIC PROXY — replace via fetch_entsoe.py. Areas mapped SE1+SE2→NORR, SE3→MITT, SE4→SYDVÄST,
+**Source:** ENTSO-E Transparency (realised load A65/A16). Areas mapped SE1+SE2→NORR, SE3→MITT, SE4→SYDVÄST,
 FI→EXTERN; each zone scaled so its mean equals the Svedala base-case zone load
 × k=0.50, where k is calibrated by AC N-1 screening so that
-~17% of hours are N-1 insecure — the year deliberately straddles
+~27% of hours are N-1 insecure — the year deliberately straddles
 the security boundary.
 
 **Columns:** `ZON_*` (MW), `total_mw`, `temp_north/mid/south` (°C, zone anchor
