@@ -221,9 +221,23 @@ The `-e` is an *editable install*: Python runs the code straight from `src/`, so
 pytest -q
 ```
 
-**Checkpoint:** pytest runs and reports results. Some stub tests are expected to fail — they describe the code you have not written yet. That failing list is, quite literally, your Lab 1 todo list.
+**Checkpoint:** pytest reports **1 passed, 2 failed, 7 skipped**. The two failures describe the loader code you have not written yet — that failing list is, quite literally, your Lab 1 todo list. The seven skipped tests are placeholders for later labs; they stay skipped for now.
 
-Your repository also contains `checks/lab1_check.py`. It runs the same tests and prints them as a task list rather than as test output; Lab 1 starts by running it. Both tools look at the same tests, so the two views always agree.
+Your repository also contains `checks/lab1_check.py`. It prints the same state as a task list rather than as test output — **one PASS, four FAIL** before you start — and Lab 1 opens by running it. Its counts differ from pytest's because it also checks the CLI and the suite as a whole; both views go green together when the lab is done.
+
+### C6. One piece of Python that Lab 1 needs a day early
+
+Lab 1 asks `run_power_flow()` to **stop loudly** when the power flow does not converge. pandapower signals non-convergence by raising its own exception, `pp.LoadflowNotConverged`; your function must catch it and re-raise it as a plain `RuntimeError` with a message a human can act on. The pattern:
+
+```python
+try:
+    pp.runpp(net)                      # may raise pp.LoadflowNotConverged
+except pp.LoadflowNotConverged as err:
+    # re-raise as a RuntimeError; "from err" keeps the original cause visible
+    raise RuntimeError("Power flow did not converge — check the input data") from err
+```
+
+Why not let `LoadflowNotConverged` escape on its own? Whoever calls your toolbox should not need to know pandapower internals to handle your errors. A function that returns nonsense quietly is worse than one that stops loudly — exception handling gets its full treatment in Lecturecise 3, the day after Lab 1, so use the pattern as given and bring your questions there.
 
 ---
 

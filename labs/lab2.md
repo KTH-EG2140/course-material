@@ -24,6 +24,8 @@ Create `src/svedala_toolbox/screener.py`. Requirements:
 - Non-convergence handled **explicitly**: `status="not_converged"`, never a silent `except: pass`
 - Named constants, docstrings, no prints inside the function, no hard-coded paths — everything LC3 taught
 
+*Optional upgrade from LC3: the lecture offered `class PowerFlowError(RuntimeError)` as the step up from Lab 1's plain `RuntimeError`. If you take it, define it in `loader.py` and raise it from `run_power_flow` — everything that catches `RuntimeError` still works, because a `PowerFlowError` **is** one.*
+
 Work in small commits with honest messages — this history gets reviewed.
 
 ## 2. Prove it against the oracle (25 min)

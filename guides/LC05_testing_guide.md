@@ -42,7 +42,7 @@ def results():
     return screen_n1(load_svedala())
 ```
 
-Every test taking `results` as an argument shares one computed instance — `scope="module"` means it is built once for the whole file. Run `pytest -v tests/test_screener.py`: same tests, one screening run instead of several. Now parametrisation — one test body, many cases:
+Every test taking `results` as an argument shares one computed instance — `scope="module"` means it is built once for the whole file. (The lecture's fixture had no `scope=` — that default rebuilds the value for every test, the safe choice when tests might change it; `module` is the right trade here because screening is slow and every test only *reads* the result.) Run `pytest -v tests/test_screener.py`: same tests, one screening run instead of several. Now parametrisation — one test body, many cases:
 
 ```python
 @pytest.mark.parametrize("scaling", [0.8, 1.0, 1.05])

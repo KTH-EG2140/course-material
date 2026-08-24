@@ -75,11 +75,19 @@ The course rule, from here to the end: **anything you did not write gets attribu
 
 Lab 3 asks you to find a bug in a 13-commit history. `git bisect` does that by binary search: you tell it one commit where the code was fine and one where it is broken, and it checks out the middle one for you, over and over, until one commit is left.
 
-Try the mechanism once here, in the scratch repo, where you know the answer. Go back to the `git-practice` folder from Part A (from your toolbox repo that is typically `cd ../git-practice`) and make five commits — one of them quietly breaks the limit value, and the messages are deliberately useless, exactly like Lab 3's:
+Try the mechanism once here, in the scratch repo, where you know the answer. Go back to the `git-practice` folder from Part A (from your toolbox repo that is typically `cd ../git-practice`) and make five commits — one of them quietly breaks the limit value, and the messages are deliberately useless, exactly like Lab 3's. First create `test_limit.py` with your editor — one test that fails exactly when the limit is wrong:
+
+```python
+def test_limit_is_sane():
+    # the 400 kV limit is a small number in kA — 21 means someone dropped a dot
+    assert float(open("limit.txt").read()) < 3
+```
+
+Then the five commits:
 
 ```bash
 echo "2.1" > limit.txt
-git add limit.txt
+git add limit.txt test_limit.py
 git commit -qm "set the 400 kV limit"
 echo "note 1" >> notes.txt
 git add notes.txt
@@ -101,15 +109,17 @@ git bisect good                  # or: git bisect bad - for the commit git check
 git bisect reset                 # always: leaves bisect mode, back to your branch
 ```
 
-Git names the first bad commit — check it is the `21` one (`git show <hash>`), and notice how little the message helped. When a test can decide good/bad for you, git does the whole search on its own. **Just read this form for now** — it is what you use in Lab 3, where the history has tests (here it would mark every commit bad):
+Git names the first bad commit — check it is the `21` one (`git show <hash>`), and notice how little the message helped. Now the same search with nobody judging: `test_limit.py` has been in every commit since the first, so a test can decide good/bad instead of you. This is the exact form Lab 3 uses:
 
 ```bash
-git bisect start HEAD HEAD~11
+git bisect start HEAD HEAD~4
 git bisect run python -m pytest -q
 git bisect reset
 ```
 
-**Checkpoint:** you have seen `start`, `good`/`bad`, `run` and `reset` once. Five commits take a minute; thirteen take four steps instead of thirteen.
+(`pytest` comes from your course environment — if `python -m pytest` is not found, activate the venv as in the LC2 guide first.)
+
+**Checkpoint:** both rounds name the same commit — the one you judged by hand and the one `git bisect run` found alone. Five commits take a minute; thirteen take four steps instead of thirteen.
 
 *Reading: Pro Git, "Debugging with Git" (in the Git Tools chapter) — https://git-scm.com/book/en/v2/Git-Tools-Debugging-with-Git*
 
