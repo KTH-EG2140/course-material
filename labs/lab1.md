@@ -9,7 +9,7 @@ In the LC1 warm-up notebook — [notebooks/LC01_svedala_warmup.ipynb](../noteboo
 
 ## 0. Get your repository (10 min)
 
-1. Accept the email invitation to your personal repository `p1-workbook-<username>` (sent after Lecturecise 1, to the address behind the Github username you gave in the diagnostic). It is created for you from the course template.
+1. Check the email behind the Github username you gave in the diagnostic: you received **two** GitHub invitations after Lecturecise 1 — one to the course organisation, one to your personal repository `p1-workbook-<username>` (created for you from the course template). **Accept both.** The organisation invitation is the one that matters: it carries your membership, the cohort team, and the write access that pair work depends on.
 2. Clone it, create the environment (explicit Python version — outside a venv, plain `python` is whichever interpreter your system finds first; the LC2 guide has the why), install:
 
 ```bash
@@ -17,8 +17,7 @@ git clone <your-repo-url>
 cd p1-workbook-<you>
 python3.11 -m venv .venv             # Windows: py -3.11 -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -r requirements.txt      # the dependencies
-pip install -e .                     # your own package, editable
+pip install -r requirements.txt      # dependencies + your own package, editable (-e . is its last line)
 ```
 
 3. Look around. The layout is the one from LC2, with three things already in place: a **stubbed package** in `src/svedala_toolbox/`, a **test suite** in `tests/` (one test passing, two waiting for your code), and a **self-check** in `checks/`.
@@ -42,7 +41,39 @@ Open `src/svedala_toolbox/loader.py`. Two functions carry TODOs — the signatur
 
 Working in a module instead of a notebook means: no prints scattered around, no top-level code that runs on import, docstrings kept honest.
 
-**Checkpoint:** `pytest tests/ -q` — the two provided loader tests now pass.
+Before the checkpoint, meet the tool behind it. **pytest is a test runner**: it looks in `tests/` for files named `test_*.py`, runs every function named `test_*`, and counts. A test fails when an `assert` inside it is false or an error is raised. The `-q` flag keeps it quiet — one character per test, then a summary. Today you only *run* tests; writing them gets its own treatment in Lecturecise 5.
+
+This is what `pytest tests/ -q` printed on a fresh repository, before any code was written (trimmed to the parts you read):
+
+```
+ssssFFsss.                                                               [100%]
+=================================== FAILURES ===================================
+______________________________ test_network_sizes ______________________________
+
+    def test_network_sizes():
+        """The model has the element counts we know from the data."""
+>       net = load_svedala()
+...
+>       raise NotImplementedError("Lab 1: port your notebook code here")
+E       NotImplementedError: Lab 1: port your notebook code here
+
+src/svedala_toolbox/loader.py:35: NotImplementedError
+... (the second failure reads the same) ...
+=========================== short test summary info ============================
+FAILED tests/test_loader.py::test_network_sizes - NotImplementedError: Lab 1:...
+FAILED tests/test_loader.py::test_power_flow_converges - NotImplementedError:...
+2 failed, 1 passed, 7 skipped in 17.42s
+```
+
+How to read it:
+
+- Each `.` is a pass, each `F` a failure, each `s` a skipped placeholder for a later lab.
+- The FAILURES section replays each failing test — read the `E` lines and the assert or raise they point at (here: the stub's `NotImplementedError`), ignore the rest at this stage.
+- The last line is the count, and it is the verdict.
+
+Failing tests before you write the code are expected — they are the task list.
+
+**Checkpoint:** `pytest tests/ -q` — the two provided loader tests now pass: **3 passed, 7 skipped**.
 
 Commit: `git add -A && git commit -m "Port Svedala loader from L1 notebook"` and `git push`.
 
@@ -69,7 +100,7 @@ Commit and push.
 
 Open `tests/test_loader.py`. Two tests are written for you as models. Add **one of your own** — something *you* think should always be true of a correctly loaded Svedala network. Ideas in the file; better if you invent your own. One good assertion beats five trivial ones.
 
-Then make it mean something: break the loader on purpose (comment out the slack flag, or skip the loads), watch your test fail, restore, watch it pass. **A test you have never seen fail proves nothing.**
+Then make it mean something: break the loader on purpose (comment out the slack flag, or skip the loads), run `pytest tests/ -q` and watch your test fail — same reading as before — then restore and watch it pass. **A test you have never seen fail proves nothing.**
 
 Commit and push. Notice the dot next to your commit on GitHub turning green — that is the CI robot running your tests on every push, from your `requirements.txt`, on a machine you have never touched. Reproducibility, cashed in.
 
@@ -83,7 +114,7 @@ python checks/lab1_check.py
 
 ## Extension (if time remains)
 
-- Delete your `.venv/`, rebuild it from `requirements.txt`, reinstall the package and run the self-check again. Same result, environment thrown away and recreated in a minute — that is what LC2 meant by the recipe being the thing you keep.
+- Delete your `.venv/`, rebuild it from `requirements.txt` (which reinstalls your package too) and run the self-check again. Same result, environment thrown away and recreated in a minute — that is what LC2 meant by the recipe being the thing you keep.
 - Add `svedala pf --scaling 1.02` to your experiments — the first line just reaches 100%. Then keep raising the scaling in small steps: at what point does the power flow stop converging entirely? Remember both numbers — the edge returns in the LC5 testing session, and scaled cases return when we generate training data in Module 3.
 
 ---

@@ -186,12 +186,12 @@ That cycle — *status, add, commit with a message that says why* — is the hab
 
 Lab 1 assumes the steps below are already done, so that the session is spent building — not installing. Everything is the Part A/B routine, applied to your real course repository.
 
-### C1. Accept the invitation
+### C1. Accept both invitations
 
-Check your KTH mail for a GitHub invitation to your personal repository `p1-workbook-<your GitHub username>` (sent within a day after the day-1 survey). Accept it and log in on github.com so you can see the repository.
+Check your KTH mail for **two** GitHub invitations (sent within a day after the day-1 survey): one to the course organisation, one to your personal repository `p1-workbook-<your GitHub username>`. Accept **both**, then log in on github.com so you can see the repository. The organisation invitation is the one that matters — it carries your membership, the cohort team, and the write access pair work depends on.
 
 **Checkpoint:** you can open your repository page in the browser.
-*No invitation a day after the survey? Post on Discussions — do not wait until the lab.*
+*No invitations a day after the survey? Post on Discussions — do not wait until the lab.*
 
 ### C2. Clone it
 
@@ -216,13 +216,9 @@ pip install -r requirements.txt
 
 **Checkpoint:** the install finishes without red errors. It is a few hundred megabytes — do this on decent wifi, not at 09:58 before the lab.
 
-### C4. Install the package you are about to build
+### C4. The package you are about to build is already installed
 
-```bash
-pip install -e .
-```
-
-The `-e` is an *editable install*: Python runs the code straight from `src/`, so every edit you make is live immediately — no reinstalling. This is how the toolbox will be developed all through Period 1.
+No command here — the last line of `requirements.txt` is `-e .`, so C3 already installed your own package. The `-e` is an *editable install*: Python runs the code straight from `src/`, so every edit you make is live immediately — no reinstalling. This is how the toolbox will be developed all through Period 1.
 
 ### C5. Run the tests you were given
 
@@ -305,6 +301,6 @@ You are done when all five are true:
 2. You can create, activate and deactivate a venv and explain what A3 demonstrated (the failed import — or the changed module path)
 3. `python pf.py` prints the 10 981 MW line
 4. `git log --oneline` in your scratch folder shows your commit
-5. Your course repository is cloned, its venv installed (C3–C4), and `pytest -q` runs
+5. Your course repository is cloned, its venv installed (C3), and `pytest -q` runs
 
 The scratch folder has served its purpose — keep it or delete it. Lab 1 starts from your real course repository.
