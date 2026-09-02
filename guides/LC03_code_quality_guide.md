@@ -1,6 +1,6 @@
 # LC3 follow-along guide — Code quality and error handling
 
-*EG2140 · Lecturecise 3 hands-on, ~45 min. Companion files: [lc03_before.py](companions/lc03_before.py) (what we start from) and [lc03_after.py](companions/lc03_after.py) (where we end) — download both from the course material's `guides/companions/` folder and put them in your toolbox repo root; the files use its `data/svedala/` folder.*
+*EG2140 · Lecturecise 3 hands-on, ~45 min. Companion files: [lc03_before.py](companions/lc03_before.py) (what we start from) and [lc03_after.py](companions/lc03_after.py) (where we end) — download both from the course material's `guides/companions/` folder and put them in the root of your **own** toolbox repo (`p1-workbook-<your username>` — yours, not your lab pair's host repo); the files use its `data/svedala/` folder.*
 
 ## Part A — Live refactor (25 min, work along)
 

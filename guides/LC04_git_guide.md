@@ -104,8 +104,10 @@ The limit silently became 21 somewhere in the middle — pretend you just discov
 
 ```bash
 git bisect start HEAD HEAD~4     # bad = now, good = four commits back
-git bisect good                  # or: git bisect bad - for the commit git checks out
-...                              # git narrows it down; two or three answers is enough
+cat limit.txt                    # look at the commit git checked out - it shows 21
+git bisect bad                   # so tell git: this one is broken
+cat limit.txt                    # git jumps to the next candidate - this one shows 2.1
+git bisect good                  # so: fine. git now names the first bad commit
 git bisect reset                 # always: leaves bisect mode, back to your branch
 ```
 
@@ -120,6 +122,8 @@ git bisect reset
 (`pytest` comes from your course environment — if `python -m pytest` is not found, activate the venv as in the LC2 guide first.)
 
 **Checkpoint:** both rounds name the same commit — the one you judged by hand and the one `git bisect run` found alone. Five commits take a minute; thirteen take four steps instead of thirteen.
+
+This Part E is the warm-up. Lab 3 runs the same search on a separate history you download as [bisect-practice.zip](../labs/bisect-practice.zip) — 13 commits, so the span there is `git bisect start HEAD HEAD~11`, and a failing test plays the judge from the start.
 
 *Reading: Pro Git, "Debugging with Git" (in the Git Tools chapter) — https://git-scm.com/book/en/v2/Git-Tools-Debugging-with-Git*
 

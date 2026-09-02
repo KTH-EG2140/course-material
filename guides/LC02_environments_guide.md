@@ -2,7 +2,7 @@
 
 *EG2140 · Lecturecise 2 hands-on. Work along in the session, or self-paced if you missed it. Time: ~45 minutes, plus Part C (~10 min) before Lab 1. Nothing here touches your course repository — that arrives in Lab 1. Today you practice in a scratch folder.*
 
-**What you need:** a terminal, Python 3.11+, git, a text editor. (Checked in Lecturecise 1 — if something is broken on your machine, fix it now: raise your hand, this session exists for exactly that.)
+**What you need:** a terminal, Python 3.11+, git, a text editor. Git is a requirement, not a nice-to-have — Part B runs on it and every lab from Lab 1 hands in through it. Check it now with `git --version`; if that fails, install it from https://git-scm.com/downloads (macOS: `xcode-select --install` also works) before you reach Part B. (Both were checked in Lecturecise 1 — if something is broken on your machine, fix it now: raise your hand, this session exists for exactly that.)
 
 **A note on terminals:** the commands below work in any modern shell. Where macOS/Linux and Windows differ, both variants are given — pick yours. Everything in this course can be done from the command line, and we encourage it: the CLI is where your Period 2 agent lives too.
 
@@ -29,9 +29,16 @@ python --version
 
 A virtual environment is a private set of installed packages for one project — so your projects can't break each other.
 
+Outside a venv, plain `python` is whichever interpreter your system finds first — not predictable. Create the venv with an explicit version; the venv then locks that interpreter in:
+
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv           # macOS / Linux
 ```
+```powershell
+py -3.11 -m venv .venv             # Windows
+```
+
+*3.11 is the version the course stack is pinned and tested on. No `python3.11` on your machine? Use the newest Python 3 you do have — but name it explicitly (`python3.12 -m venv .venv`), never plain `python`.*
 
 Activate it:
 
@@ -199,10 +206,10 @@ cd p1-workbook-<your GitHub username>
 
 ### C3. Environment, from the recipe this time
 
-Create and activate a venv exactly as in A2, then install the pinned course environment:
+Create and activate a venv exactly as in A2 — explicit interpreter here too — then install the pinned course environment:
 
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv           # Windows: py -3.11 -m venv .venv
 # activate it (A2), then:
 pip install -r requirements.txt
 ```

@@ -10,12 +10,12 @@ In the LC1 warm-up notebook — [notebooks/LC01_svedala_warmup.ipynb](../noteboo
 ## 0. Get your repository (10 min)
 
 1. Accept the email invitation to your personal repository `p1-workbook-<username>` (sent after Lecturecise 1, to the address behind the Github username you gave in the diagnostic). It is created for you from the course template.
-2. Clone it, create the environment, install:
+2. Clone it, create the environment (explicit Python version — outside a venv, plain `python` is whichever interpreter your system finds first; the LC2 guide has the why), install:
 
 ```bash
 git clone <your-repo-url>
 cd p1-workbook-<you>
-python -m venv .venv
+python3.11 -m venv .venv             # Windows: py -3.11 -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt      # the dependencies
 pip install -e .                     # your own package, editable
@@ -31,7 +31,7 @@ python checks/lab1_check.py
 
 One PASS, four FAIL. Those four FAIL lines are this lab's task list.
 
-`checks/lab1_check.py` is a thin wrapper: it runs the same tests `pytest -q` runs and prints them as a task list, so you can see at a glance what is left. Use either — the counts describe the same tests. *(Laptop trouble? Say so at the start of the session; that is what the session is for.)*
+`checks/lab1_check.py` covers the same goals as the tests, printed as a task list so you can see at a glance what is left — plus the CLI commands and the suite as a whole, which `pytest -q` alone does not reach. That is why its counts differ from pytest's; both views go green together when the lab is done. *(Laptop trouble? Say so at the start of the session; that is what the session is for.)*
 
 ## 1. Port the loader (30 min)
 
