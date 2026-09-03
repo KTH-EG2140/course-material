@@ -9,7 +9,7 @@ Read the code AND the git history. For each item: fine / could improve / problem
 **Tests** — Do they assert something that could actually fail? Tolerances on numerical values? Any test that has never failed?
 **History** — Do commit messages say why? Could you follow the work from the log alone?
 
-Then write exactly three sentences in an Issue titled "Lab 2 review":
+Then write exactly three sentences in an Issue titled "Lab 2 pod check":
 1. One thing done well (be specific — "good names" is not specific)
 2. One concrete improvement (point at a line)
 3. One honest question

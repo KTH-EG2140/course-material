@@ -2,21 +2,54 @@
 
 *EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: the partner whose name comes FIRST alphabetically (Lab 3 swaps) — both of you can push to it, every student has push on every workbook repo. No AI tools.*
 
-Someone left the course a gift: `awful_screener.py` — an N-1 screener that **works**. It produces correct numbers. It is also unreadable, untestable, and one keystroke from disaster. Yesterday you refactored a 20-line version of this problem together; today's is 70 lines, and it is for keeps: the result becomes `svedala_toolbox/screener.py`, a permanent part of your package.
+Someone left the course a gift: `awful_screener.py` — an N-1 screener that **works**. It produces correct numbers. It is also unreadable, untestable, and one keystroke from disaster. In LC3 you refactored a 20-line version of this problem together; today's is 70 lines, and it is for keeps: the result becomes `svedala_toolbox/screener.py`, a permanent part of your package.
 
 ## 0. Meet the patient (15 min)
 
-Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder), drop both in your repo root, and run it:
+Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder) and drop both in your repo root. They are scratch, like LC3's companions: the oracle moves into `tests/data/` in section 2 and the script is deleted at the end of section 2. If a `git add -A` in between commits them anyway, that is not a disaster — `git rm awful_screener.py` removes it later and the history simply shows the cleanup.
+
+Activate your environment and run the script. Inside an activated venv, `python` *is* the venv's interpreter — that is what activation does — so the bare name is safe here, exactly as in Lab 1's self-check:
 
 ```bash
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 python awful_screener.py
 ```
 
-While it grinds through 52 contingencies, read it with your partner and **write down every distinct sin you find** — aim for ten. (You will trade lists with the other pair in your pod later.) Then look at what it printed: 15 DANGER lines, worst case AL7 at 205%. Those numbers are *correct* — verify a few against `n1_reference_results.csv`. That file is your **oracle**: the refactor must keep producing these numbers, and the oracle is how you prove it.
+It takes a few seconds. This is what it printed on the reference solution (trimmed to the parts you read):
+
+```
+natet klart 52
+ok RL1 94.79363739733799
+ok CL5 94.92201019476443
+...
+DANGER!! RL3 154.02508888507356 3
+...
+ok CL3 95.19986890885596
+klart, worst:
+AL7 205.31210376932404
+```
+
+How to read it:
+
+- One line per contingency, 52 in all: `ok <line> <worst loading %>` when nothing overloads, `DANGER!! <line> <worst loading %> <number of overloaded lines>` when something does. Count the DANGER lines: 15.
+- The last two lines are the summary: the worst single outage is AL7, pushing some line to 205%.
+- Every one of the 52 cases converged. Remember that — it matters in section 2.
+
+While you have it open, read the script with your partner and **write down every distinct sin you find** — aim for ten. (You will trade lists with the other pair in your pod later.) Then open `n1_reference_results.csv`. The first rows:
+
+```
+outage_idx,outage_line,status,max_loading_percent,n_violations
+0,RL1,converged,94.7936373973382,0
+1,CL5,converged,94.92201019476458,0
+3,CL17,converged,97.61512869484363,0
+5,RL7,converged,96.11200881681263,0
+```
+
+One row per outaged line: its index in `net.line`, its name, whether the power flow converged, the worst loading anywhere in the network with that line out, and how many lines were above 100%. The `outage_idx` column jumps (0, 1, 3, 5, …) because the line table's own index has gaps — nothing is missing, the file has 52 rows. Verify a few numbers against what the script printed. This file is your **oracle**: the refactor must keep producing these numbers, and the oracle is how you prove it.
 
 ## 1. Refactor into the toolbox (50 min)
 
-Create `src/svedala_toolbox/screener.py`. Requirements:
+Create `src/svedala_toolbox/screener.py`, next to `loader.py`. Requirements:
 
 - One public function: `screen_n1(net, loading_limit=100.0) -> pd.DataFrame` with columns `outage_idx, outage_line, status, max_loading_percent, n_violations`
 - **Reuse your loader** — the awful script duplicates all of Lab 1 inline; that duplication dies today
@@ -24,19 +57,118 @@ Create `src/svedala_toolbox/screener.py`. Requirements:
 - Non-convergence handled **explicitly**: `status="not_converged"`, never a silent `except: pass`
 - Named constants, docstrings, no prints inside the function, no hard-coded paths — everything LC3 taught
 
+Three things about the shape before you start.
+
+**Where the loader goes.** `screen_n1` takes a network as its parameter; loading it is the caller's job — the tests and the CLI call `load_svedala()` from Lab 1 first. So the 30 lines of loading code at the top of the awful script are not ported at all: the function starts where the loop starts.
+
+**The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
+
+**`try / except / finally`.** You have met `try/except` in LC3; `finally` is new. Its block runs *whichever way the try ended* — after the last line of `try` when nothing went wrong, and after the `except` block when something did:
+
+```python
+net.line.at[idx, "in_service"] = False       # take the line out
+try:
+    ...                                       # solve, then read the results from net.res_line
+except pp.LoadflowNotConverged:
+    ...                                       # record this case as not converged
+finally:
+    net.line.at[idx, "in_service"] = True    # runs in BOTH cases: the line always comes back
+```
+
+Now look at the awful script: its restore line sits *inside* `try`, after `pp.runpp`. When `runpp` raises, Python jumps straight to `except` and the restore never runs — the line stays out of service for every contingency that follows, each one now a double outage. That is the bug. It is not visible today, because all 52 base-case contingencies converge; section 2 makes it visible.
+
+What each row carries:
+
+- `status` is `"converged"` or `"not_converged"`.
+- `max_loading_percent` is `net.res_line.loading_percent.max()`; `n_violations` is `(net.res_line.loading_percent > loading_limit).sum()` — the comparison gives one True/False per line, the sum counts the Trues. Strictly greater than the limit, as the oracle does.
+- A not-converged case has no results: give it `float("nan")` for the loading and `-1` for the count — a count that cannot be a real count, so nobody reads it as "zero violations".
+
+Collect one dictionary per outage in a list and hand the list to `pd.DataFrame(rows)` at the end — it becomes one row per dictionary, columns named by the keys.
+
 *Optional upgrade from LC3: the lecture offered `class PowerFlowError(RuntimeError)` as the step up from Lab 1's plain `RuntimeError`. If you take it, define it in `loader.py` and raise it from `run_power_flow` — everything that catches `RuntimeError` still works, because a `PowerFlowError` **is** one.*
 
-Work in small commits with honest messages — this history gets reviewed.
+Work in small commits with honest messages — this history gets reviewed. Name the file rather than using `-A`, so the scratch files stay out:
+
+```bash
+git add src/svedala_toolbox/screener.py
+git commit -m "Add N-1 screener skeleton: loop over in-service lines"
+```
 
 ## 2. Prove it against the oracle (25 min)
 
-Copy `n1_reference_results.csv` into `tests/data/` and write `tests/test_screener.py`:
+Move the oracle to where tests keep their data:
+
+```bash
+mkdir tests/data                              # Windows: mkdir tests\data
+mv n1_reference_results.csv tests/data/       # Windows: move n1_reference_results.csv tests\data\
+```
+
+Write `tests/test_screener.py` with three tests:
 
 - one row per in-service line (52)
 - the network is fully restored after screening (`net.line.in_service.all()`)
 - **the oracle test**: your results match the reference — loadings within `1e-3`, violation counts exactly
 
-When the oracle test passes, you have proven the one thing refactoring must prove: *behaviour preserved.* Commit, push, watch CI go green.
+Plain test functions, like the two in `tests/test_loader.py`; each one loads its own network with `load_svedala()` (a couple of seconds each — sharing one network between tests is what LC5 is for). Two pieces you have not written before:
+
+```python
+from pathlib import Path
+
+import pandas as pd
+
+from svedala_toolbox.loader import load_svedala
+from svedala_toolbox.screener import screen_n1
+
+# __file__ is this test file's own path, so the oracle is found no matter
+# which folder pytest is started from. loader.py uses the same idea for DATA_DIR.
+ORACLE = Path(__file__).parent / "data" / "n1_reference_results.csv"
+```
+
+and, inside the oracle test, lining the two tables up:
+
+```python
+    results = screen_n1(load_svedala()).set_index("outage_line")
+    reference = pd.read_csv(ORACLE).set_index("outage_line")
+    # Same index on both sides, so pandas matches rows by line name when you
+    # subtract one column from the other.
+    loading_gap = (results.max_loading_percent - reference.max_loading_percent).abs()
+```
+
+Then the asserts are yours: every status converged, `loading_gap.max()` below `1e-3`, `n_violations` equal on every row. Why a tolerance at all: a power flow's last decimals differ between machines and library versions — the reference solution's deviation is about `1e-12`, so `1e-3` is generous on purpose, and the counts are integers, so those must match exactly.
+
+**Checkpoint:** `pytest tests/ -q`. On the reference solution:
+
+```
+ssss...ss...s.                                                           [100%]
+7 passed, 7 skipped in 3.29s
+```
+
+Before this lab it said `4 passed, 7 skipped` — the three provided tests plus the one you wrote in Lab 1. Three more dots, three more passed. Failing? Read the `E` lines as in Lab 1 — the assertion messages you wrote are what makes them readable.
+
+When the oracle test passes, you have proven the one thing refactoring must prove: *behaviour preserved.*
+
+Now the uncomfortable part. **These three tests pass a screener with the awful script's restore bug.** Every base-case contingency converges, so the `except` branch — and the skipped restore — never run; a test that has never seen its bug proves nothing (Lab 1's rule). Test the case where it bites — the stressed network from Lab 1's extension. Add a fourth test:
+
+```python
+def test_restores_lines_even_when_power_flow_fails():
+    net = load_svedala()
+    net.load["scaling"] = 1.05          # same knob as `svedala pf --scaling 1.05`
+    results = screen_n1(net)
+    assert (results.status == "not_converged").any(), "expected some non-converging cases"
+    assert net.line.in_service.all(), "a failed power flow left its outage behind"
+```
+
+`net.load["scaling"]` is pandapower's per-load multiplier, the column your Lab 1 CLI sets for `--scaling`. On the reference solution at 1.05, 21 of the 52 contingencies do not converge and all 52 lines are back in service afterwards. With the restore bug, 42 do not converge and only 10 lines are left in service: every failed case leaves its line out, making the next case worse. Do not assert the 21 — assert that *some* case failed and that the network is whole; the exact count is the solver's business.
+
+**Checkpoint:** `pytest tests/ -q` → `8 passed, 7 skipped`. Commit, push, watch CI go green:
+
+```bash
+git add src/svedala_toolbox/screener.py tests/test_screener.py tests/data/n1_reference_results.csv
+git commit -m "Screener tests: row count, restoration, oracle match, stressed-case restoration"
+git push
+```
+
+The awful script leaves now. `git status` tells you which case you are in: listed as untracked → plain delete (`rm awful_screener.py`, Windows `del awful_screener.py`); already committed → `git rm awful_screener.py` and commit the removal.
 
 ## 2b. What did your screener just tell you? (5 min, discuss in the pair)
 
@@ -57,8 +189,8 @@ systems are studied at such points precisely to find their limits; nobody would
 
 ## 3. Pod check (20 min)
 
-Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo (open an Issue titled "Lab 2 pod check"): one thing done well, one concrete improvement, one question. Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
+Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo: one thing done well, one concrete improvement, one question. It goes in a GitHub **Issue** — the **Issues** tab at the top of their repository, then **New issue** — titled "Lab 2 pod check". Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
 
 ## Done when
 
-Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. (It earns its keep in Module 3, where these rankings become ML training labels.)
+Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first; two outages with the same loading is a tie, and a tie is fine. (It earns its keep in Module 3, where these rankings become ML training labels.)
