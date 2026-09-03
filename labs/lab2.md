@@ -6,7 +6,18 @@ Someone left the course a gift: `awful_screener.py` — an N-1 screener that **w
 
 ## 0. Meet the patient (15 min)
 
-Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder) and drop both in your repo root. They are scratch, like LC3's companions: the oracle moves into `tests/data/` in section 2 and the script is deleted at the end of section 2. If a `git add -A` in between commits them anyway, that is not a disaster — `git rm awful_screener.py` removes it later and the history simply shows the cleanup.
+Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder; on GitHub, open the file and use the **Download raw file** button) and drop both in your repo root. They are scratch, like LC3's companions: the oracle moves into `tests/data/` in section 2 and the script is deleted at the end of section 2. If a commit in between sweeps them in anyway, `git rm awful_screener.py` removes the script later and the history simply shows the cleanup.
+
+One check before anything is committed today. Run `git status`: if it lists `.venv/` or `__pycache__` folders as untracked, your repository has no `.gitignore` yet. Create one now, in the repo root — LC2 did this for the scratch folder, and the workbook needs the same:
+
+```
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+```
+
+Those are all rebuildable files; the venv alone is hundreds of megabytes and contains single files above GitHub's size limit, so a `git add -A` that catches it makes the push fail. If `git status` shows any of these as *already tracked* (they went in with an earlier `git add -A`), untrack them once with `git rm -r --cached .venv` (same for the others), then commit the `.gitignore` together with the removal.
 
 Activate your environment and run the script. Inside an activated venv, `python` *is* the venv's interpreter — that is what activation does — so the bare name is safe here, exactly as in Lab 1's self-check:
 
@@ -32,7 +43,7 @@ AL7 205.31210376932404
 How to read it:
 
 - One line per contingency, 52 in all: `ok <line> <worst loading %>` when nothing overloads, `DANGER!! <line> <worst loading %> <number of overloaded lines>` when something does. Count the DANGER lines: 15.
-- The last two lines are the summary: the worst single outage is AL7, pushing some line to 205%.
+- The last two lines are the summary: the worst outage pushes some line to 205%. Two outages actually tie at that value, AL7 and AL8 — the script names AL7 only because its `>` comparison keeps the first one it saw. Ties like this return in the extension.
 - Every one of the 52 cases converged. Remember that — it matters in section 2.
 
 While you have it open, read the script with your partner and **write down every distinct sin you find** — aim for ten. (You will trade lists with the other pair in your pod later.) Then open `n1_reference_results.csv`. The first rows:
@@ -52,14 +63,14 @@ One row per outaged line: its index in `net.line`, its name, whether the power f
 Create `src/svedala_toolbox/screener.py`, next to `loader.py`. Requirements:
 
 - One public function: `screen_n1(net, loading_limit=100.0) -> pd.DataFrame` with columns `outage_idx, outage_line, status, max_loading_percent, n_violations`
-- **Reuse your loader** — the awful script duplicates all of Lab 1 inline; that duplication dies today
+- **Reuse your loader** — the awful script duplicates all of Lab 1 inline; that duplication dies today: the screener receives a network built by `load_svedala()` and contains no loading code of its own
 - Every outage **restored** whatever happens (`try/finally` — the awful script restores only on success; find that bug, it is real)
 - Non-convergence handled **explicitly**: `status="not_converged"`, never a silent `except: pass`
-- Named constants, docstrings, no prints inside the function, no hard-coded paths — everything LC3 taught
+- A named constant for the limit (`LOADING_LIMIT_PERCENT = 100.0`, used as the parameter's default), docstrings, no prints inside the function, no hard-coded paths — everything LC3 taught
 
 Three things about the shape before you start.
 
-**Where the loader goes.** `screen_n1` takes a network as its parameter; loading it is the caller's job — the tests and the CLI call `load_svedala()` from Lab 1 first. So the 30 lines of loading code at the top of the awful script are not ported at all: the function starts where the loop starts.
+**Where the loader goes.** "Reuse" here means *do not port*: `screen_n1` takes a network as its parameter, and whoever calls it — your tests, later the CLI — builds that network with `load_svedala()` from Lab 1 first. So the 30 lines of loading code at the top of the awful script do not move into `screener.py` at all: the function starts where the loop starts, and `screener.py` may not need to import the loader at all.
 
 **The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
 
@@ -134,7 +145,7 @@ and, inside the oracle test, lining the two tables up:
     loading_gap = (results.max_loading_percent - reference.max_loading_percent).abs()
 ```
 
-Then the asserts are yours: every status converged, `loading_gap.max()` below `1e-3`, `n_violations` equal on every row. Why a tolerance at all: a power flow's last decimals differ between machines and library versions — the reference solution's deviation is about `1e-12`, so `1e-3` is generous on purpose, and the counts are integers, so those must match exactly.
+Then the asserts are yours: every status converged, `loading_gap.max()` below `1e-3`, `n_violations` equal on every row. Comparing two columns gives one True/False per row, so "on every row" is `.all()`: `assert (results.n_violations == reference.n_violations).all()`. Trap: leave the `.all()` out and `assert results.n_violations == reference.n_violations` dies with `The truth value of a Series is ambiguous` — pandas refusing to guess whether you meant *all* rows or *any*. Why a tolerance at all: a power flow's last decimals differ between machines and library versions — the reference solution's deviation is about `1e-12`, so `1e-3` is generous on purpose, and the counts are integers, so those must match exactly.
 
 **Checkpoint:** `pytest tests/ -q`. On the reference solution:
 
@@ -168,7 +179,7 @@ git commit -m "Screener tests: row count, restoration, oracle match, stressed-ca
 git push
 ```
 
-The awful script leaves now. `git status` tells you which case you are in: listed as untracked → plain delete (`rm awful_screener.py`, Windows `del awful_screener.py`); already committed → `git rm awful_screener.py` and commit the removal.
+The awful script leaves now. `git status` tells you which case you are in: listed as untracked → plain delete (`rm awful_screener.py`, Windows `del awful_screener.py`); already committed → `git rm awful_screener.py` and commit the removal. If `git status` also lists `__pycache__` folders, your `.gitignore` from section 0 is missing a line — those are Python's compiled caches, never work of yours.
 
 ## 2b. What did your screener just tell you? (5 min, discuss in the pair)
 
@@ -180,7 +191,7 @@ Now your own screener confirms it systematically. The Svedala CGMES file is a
 **stressed planning snapshot** — a design case, deliberately loaded to the
 edge. Real
 systems are studied at such points precisely to find their limits; nobody would
-*operate* there. Two questions to discuss and note in your repo:
+*operate* there. Two questions to discuss and note in your repo — a `NOTES.md` in the repo root, which Lab 3 continues:
 
 1. If you were the operator handed this screener output, what would you do first?
 2. How much load do you think Svedala *can* serve N-1 securely? Guess a
@@ -189,8 +200,8 @@ systems are studied at such points precisely to find their limits; nobody would
 
 ## 3. Pod check (20 min)
 
-Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo: one thing done well, one concrete improvement, one question. It goes in a GitHub **Issue** — the **Issues** tab at the top of their repository, then **New issue** — titled "Lab 2 pod check". Sign it. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
+Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo: one thing done well, one concrete improvement, one question. It goes in a GitHub **Issue** — the **Issues** tab at the top of their repository, then **New issue** — titled "Lab 2 pod check". Sign it with both reviewers' names. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
 
 ## Done when
 
-Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first; two outages with the same loading is a tie, and a tie is fine. (It earns its keep in Module 3, where these rankings become ML training labels.)
+Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first. AL7 and AL8 tie at the top, so a test that insists on AL7 first will fail on a perfectly good ranking — assert something a tie cannot break. (It earns its keep in Module 3, where these rankings become ML training labels.)
