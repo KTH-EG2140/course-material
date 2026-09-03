@@ -8,7 +8,7 @@ Someone left the course a gift: `awful_screener.py` — an N-1 screener that **w
 
 Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder; on GitHub, open the file and use the **Download raw file** button) and drop both in your repo root. They are scratch, like LC3's companions: the oracle moves into `tests/data/` in section 2 and the script is deleted at the end of section 2. If a commit in between sweeps them in anyway, `git rm awful_screener.py` removes the script later and the history simply shows the cleanup.
 
-One check before anything is committed today. Run `git status`: if it lists `.venv/` or `__pycache__` folders as untracked, your repository has no `.gitignore` yet. Create one now, in the repo root — LC2 did this for the scratch folder, and the workbook needs the same:
+One check before anything is committed today. Repositories created from the template early in the course have no `.gitignore`; newer ones ship one. Run `git status`: if it lists `.venv/` or `__pycache__` folders as untracked, yours has none. Create it now, in the repo root — the same file LC2 made for the scratch folder — and if `git status` shows only the two files you just downloaded, you already have one and skip this:
 
 ```
 .venv/
@@ -56,7 +56,7 @@ outage_idx,outage_line,status,max_loading_percent,n_violations
 5,RL7,converged,96.11200881681263,0
 ```
 
-One row per outaged line: its index in `net.line`, its name, whether the power flow converged, the worst loading anywhere in the network with that line out, and how many lines were above 100%. The `outage_idx` column jumps (0, 1, 3, 5, …) because the line table's own index has gaps — nothing is missing, the file has 52 rows. Verify a few numbers against what the script printed. This file is your **oracle**: the refactor must keep producing these numbers, and the oracle is how you prove it.
+One row per outaged line: its index in `net.line`, its name, whether the power flow converged, the worst loading anywhere in the network with that line out, and how many lines were above 100%. The `outage_idx` column jumps (0, 1, 3, 5, …) because the line table's own index has gaps — nothing is missing, the file has 52 rows. Verify a few numbers against what the script printed: they agree to about twelve decimals and then drift (`94.79363739733799` versus `94.7936373973382`) — floating-point noise from two different machines, and section 2 shows how a test copes with it. This file is your **oracle**: the refactor must keep producing these numbers, and the oracle is how you prove it.
 
 ## 1. Refactor into the toolbox (50 min)
 
@@ -91,18 +91,18 @@ Now look at the awful script: its restore line sits *inside* `try`, after `pp.ru
 What each row carries:
 
 - `status` is `"converged"` or `"not_converged"`.
-- `max_loading_percent` is `net.res_line.loading_percent.max()`; `n_violations` is `(net.res_line.loading_percent > loading_limit).sum()` — the comparison gives one True/False per line, the sum counts the Trues. Strictly greater than the limit, as the oracle does.
+- `max_loading_percent` is `float(net.res_line.loading_percent.max())`; `n_violations` is `int((net.res_line.loading_percent > loading_limit).sum())` — the comparison gives one True/False per line, the sum counts the Trues. Strictly greater than the limit, as the oracle does. The `float(...)` and `int(...)` turn numpy's own number types into plain Python ones, so the column holds the same kind of value as the `-1` below.
 - A not-converged case has no results: give it `float("nan")` for the loading and `-1` for the count — a count that cannot be a real count, so nobody reads it as "zero violations".
 
 Collect one dictionary per outage in a list and hand the list to `pd.DataFrame(rows)` at the end — it becomes one row per dictionary, columns named by the keys.
 
 *Optional upgrade from LC3: the lecture offered `class PowerFlowError(RuntimeError)` as the step up from Lab 1's plain `RuntimeError`. If you take it, define it in `loader.py` and raise it from `run_power_flow` — everything that catches `RuntimeError` still works, because a `PowerFlowError` **is** one.*
 
-Work in small commits with honest messages — this history gets reviewed. Name the file rather than using `-A`, so the scratch files stay out:
+Work in small commits with honest messages — this history gets reviewed. Two commits is a natural rhythm here: one when the loop runs and returns a table, one when the not-converged handling and the `finally` are in. The message describes what the commit actually contains, nothing more — if you wrote the whole function in one go, one commit saying so is the honest history. Name the file rather than using `-A`, so the scratch files stay out:
 
 ```bash
 git add src/svedala_toolbox/screener.py
-git commit -m "Add N-1 screener skeleton: loop over in-service lines"
+git commit -m "Add N-1 screener: try/finally restore, explicit not_converged rows"
 ```
 
 ## 2. Prove it against the oracle (25 min)
@@ -171,7 +171,15 @@ def test_restores_lines_even_when_power_flow_fails():
 
 `net.load["scaling"]` is pandapower's per-load multiplier, the column your Lab 1 CLI sets for `--scaling`. On the reference solution at 1.05, 21 of the 52 contingencies do not converge and all 52 lines are back in service afterwards. With the restore bug, 42 do not converge and only 10 lines are left in service: every failed case leaves its line out, making the next case worse. Do not assert the 21 — assert that *some* case failed and that the network is whole; the exact count is the solver's business.
 
-**Checkpoint:** `pytest tests/ -q` → `8 passed, 7 skipped`. Commit, push, watch CI go green:
+**Checkpoint:** `pytest tests/ -q` → `ssss...ss....s.` and `8 passed, 7 skipped`.
+
+Now make the new test earn its place — Lab 1's rule again, a test you have never seen fail proves nothing. Move the restore line in `screener.py` from `finally:` to the end of the `try:` block (the awful script's version), run `pytest tests/ -q` once more. On the reference solution the first three screener tests still pass and the fourth fails:
+
+```
+E       AssertionError: a failed power flow left its outage behind
+```
+
+Put the line back under `finally:`, run again, green. That red run is the only proof the bug is really caught. Then commit, push, watch CI go green:
 
 ```bash
 git add src/svedala_toolbox/screener.py tests/test_screener.py tests/data/n1_reference_results.csv
@@ -191,7 +199,7 @@ Now your own screener confirms it systematically. The Svedala CGMES file is a
 **stressed planning snapshot** — a design case, deliberately loaded to the
 edge. Real
 systems are studied at such points precisely to find their limits; nobody would
-*operate* there. Two questions to discuss and note in your repo — a `NOTES.md` in the repo root, which Lab 3 continues:
+*operate* there. Two questions to discuss and note in your repo — a `NOTES.md` in the repo root, which Lab 3 continues (`git add NOTES.md`, commit, push, so your partner and your pod can read it):
 
 1. If you were the operator handed this screener output, what would you do first?
 2. How much load do you think Svedala *can* serve N-1 securely? Guess a
@@ -204,4 +212,4 @@ Swap with the other pair in your pod (open their repo on GitHub — everyone in 
 
 ## Done when
 
-Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first. AL7 and AL8 tie at the top, so a test that insists on AL7 first will fail on a perfectly good ranking — assert something a tie cannot break. (It earns its keep in Module 3, where these rankings become ML training labels.)
+Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first. AL7 and AL8 tie at the top, so a test that insists on AL7 first will fail on a perfectly good ranking — assert something a tie cannot break. Not-converged rows have no loading to rank by; pandas puts their NaN last, and the docstring says so. (It earns its keep in Module 3, where these rankings become ML training labels.)
