@@ -8,7 +8,7 @@ Someone left the course a gift: `awful_screener.py` — an N-1 screener that **w
 
 Download [awful_screener.py](awful_screener.py) and [n1_reference_results.csv](n1_reference_results.csv) (both in the course material's `labs/` folder; on GitHub, open the file and use the **Download raw file** button) and drop both in your repo root. They are scratch, like LC3's companions: the oracle moves into `tests/data/` in section 2 and the script is deleted at the end of section 2. If a commit in between sweeps them in anyway, `git rm awful_screener.py` removes the script later and the history simply shows the cleanup.
 
-One check before anything is committed today. Repositories created from the template early in the course have no `.gitignore`; newer ones ship one. Run `git status`: if it lists `.venv/` or `__pycache__` folders as untracked, yours has none. Create it now, in the repo root — the same file LC2 made for the scratch folder — and if `git status` shows only the two files you just downloaded, you already have one and skip this:
+One check before anything is committed today: run `git status`. If it lists only the two files you just downloaded, your repository already has a `.gitignore` — skip the rest of this paragraph. If it also lists `.venv/` or `__pycache__` folders as untracked, it has none (repositories created from the template early in the course lack it): create a file named `.gitignore` in the repo root, the same kind of file LC2 had you make with `echo ".venv/" > .gitignore` in the scratch folder, with these four lines:
 
 ```
 .venv/
@@ -72,7 +72,7 @@ Three things about the shape before you start.
 
 **Where the loader goes.** "Reuse" here means *do not port*: `screen_n1` takes a network as its parameter, and whoever calls it — your tests, later the CLI — builds that network with `load_svedala()` from Lab 1 first. So the 30 lines of loading code at the top of the awful script do not move into `screener.py` at all: the function starts where the loop starts, and `screener.py` may not need to import the loader at all.
 
-**The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
+**The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. "Each line that is in service" is `for idx in net.line.index[net.line.in_service]:` — the `in_service` column is True/False per line, and putting it inside the square brackets keeps only the index labels where it is True; that replaces the awful script's `if ... == True`. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
 
 **`try / except / finally`.** You have met `try/except` in LC3; `finally` is new. Its block runs *whichever way the try ended* — after the last line of `try` when nothing went wrong, and after the `except` block when something did:
 
@@ -84,9 +84,10 @@ except pp.LoadflowNotConverged:
     ...                                       # record this case as not converged
 finally:
     net.line.at[idx, "in_service"] = True    # runs in BOTH cases: the line always comes back
+rows.append({...})                            # after the whole try statement: runs once per outage
 ```
 
-Now look at the awful script: its restore line sits *inside* `try`, after `pp.runpp`. When `runpp` raises, Python jumps straight to `except` and the restore never runs — the line stays out of service for every contingency that follows, each one now a double outage. That is the bug. It is not visible today, because all 52 base-case contingencies converge; section 2 makes it visible.
+Execution continues below the `finally` block either way, so set `status`, the loading and the count inside `try` and `except`, and append the row once, after — no duplicated append. Now look at the awful script: its restore line sits *inside* `try`, after `pp.runpp`. When `runpp` raises, Python jumps straight to `except` and the restore never runs — the line stays out of service for every contingency that follows, each one now a double outage. That is the bug. It is not visible today, because all 52 base-case contingencies converge; section 2 makes it visible.
 
 What each row carries:
 
@@ -173,13 +174,15 @@ def test_restores_lines_even_when_power_flow_fails():
 
 **Checkpoint:** `pytest tests/ -q` → `ssss...ss....s.` and `8 passed, 7 skipped`.
 
-Now make the new test earn its place — Lab 1's rule again, a test you have never seen fail proves nothing. Move the restore line in `screener.py` from `finally:` to the end of the `try:` block (the awful script's version), run `pytest tests/ -q` once more. On the reference solution the first three screener tests still pass and the fourth fails:
+Now make the new test earn its place — Lab 1's rule again, a test you have never seen fail proves nothing. Move the restore line in `screener.py` from `finally:` to the end of the `try:` block, right after the line that reads the results (the awful script's version), and run `pytest tests/ -q` once more. On the reference solution the first three screener tests still pass and the fourth fails:
 
 ```
 E       AssertionError: a failed power flow left its outage behind
+...
+1 failed, 7 passed, 7 skipped in 4.86s
 ```
 
-Put the line back under `finally:`, run again, green. That red run is the only proof the bug is really caught. Then commit, push, watch CI go green:
+The first `E` line is the whole story; the `E +  where ...` lines under it are pytest dumping the tables it compared, and you skip them. Put the line back under `finally:`, run again, green. That red run is the only proof the bug is really caught. Then commit, push, watch CI go green:
 
 ```bash
 git add src/svedala_toolbox/screener.py tests/test_screener.py tests/data/n1_reference_results.csv
@@ -208,8 +211,8 @@ systems are studied at such points precisely to find their limits; nobody would
 
 ## 3. Pod check (20 min)
 
-Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`), then write **three sentences** in their repo: one thing done well, one concrete improvement, one question. It goes in a GitHub **Issue** — the **Issues** tab at the top of their repository, then **New issue** — titled "Lab 2 pod check". Sign it with both reviewers' names. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
+Swap with the other pair in your pod (open their repo on GitHub — everyone in the course can read every course repo). Review `screener.py` and its history against the checklist (`labs/review_checklist.md`) — on GitHub the history is the **Commits** link (the clock icon next to the branch name; clicking a commit shows its diff) — then write **three sentences** in their repo: one thing done well, one concrete improvement, one question. It goes in a GitHub **Issue** — the **Issues** tab at the top of their repository, then **New issue** — titled "Lab 2 pod check". Sign it with both reviewers' names. Nothing is handed in and nothing is graded — the review lives where reviews belong, in the repository. Being reviewed is the product here — this exact format returns in the opposition rounds, with higher stakes.
 
 ## Done when
 
-Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that orders by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first. AL7 and AL8 tie at the top, so a test that insists on AL7 first will fail on a perfectly good ranking — assert something a tie cannot break. Not-converged rows have no loading to rank by; pandas puts their NaN last, and the docstring says so. (It earns its keep in Module 3, where these rankings become ML training labels.)
+Oracle test green in CI, pod check written, pod check received — before Quiz 1, which reads this lab's material. Extension: add severity ranking — a `rank_contingencies(results)` that takes the screener's table and returns the same table sorted by how much trouble each outage causes, tested. Order by `max_loading_percent`, highest first. AL7 and AL8 tie at the top, so a test that insists on AL7 first will fail on a perfectly good ranking — assert something a tie cannot break. Not-converged rows have no loading to rank by; pandas puts their NaN last, and the docstring says so. (It earns its keep in Module 3, where these rankings become ML training labels.)
