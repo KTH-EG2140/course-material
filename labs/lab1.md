@@ -84,7 +84,7 @@ Open `src/svedala_toolbox/cli.py`. The argument parsing is done; two command fun
 - **`svedala info`** — element counts and the list of zones.
 - **`svedala pf`** — run a power flow (honouring `--scaling`) and print one summary line: total load, losses, worst line loading, voltage range.
 
-The command already exists on your PATH (that is what the editable install did) — it just crashes until you fill the functions.
+The command already exists on your PATH — it just crashes until you fill the functions. Where it came from: `pyproject.toml` declares `svedala = "svedala_toolbox.cli:main"` under `[project.scripts]`, the editable install (the `-e .` from LC2's C3) wrote a small `svedala` executable into `.venv/bin` (`Scripts\` on Windows), and activating the venv put that folder first on PATH. One more piece of magic worth naming: the usage text a bare `svedala` prints is argparse's own, generated from the parser declarations in `cli.py` — no code of ours prints it.
 
 **Checkpoint:**
 
