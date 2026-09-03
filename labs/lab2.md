@@ -62,7 +62,7 @@ One row per outaged line: its index in `net.line`, its name, whether the power f
 
 Create `src/svedala_toolbox/screener.py`, next to `loader.py`. Requirements:
 
-- One public function: `screen_n1(net, loading_limit=100.0) -> pd.DataFrame` with columns `outage_idx, outage_line, status, max_loading_percent, n_violations`
+- One public function: `screen_n1(net, loading_limit=LOADING_LIMIT_PERCENT) -> pd.DataFrame` with columns `outage_idx, outage_line, status, max_loading_percent, n_violations` (the `-> pd.DataFrame` part is a return annotation — documentation of what comes back, as in the loader stub)
 - **Reuse your loader** — the awful script duplicates all of Lab 1 inline; that duplication dies today: the screener receives a network built by `load_svedala()` and contains no loading code of its own
 - Every outage **restored** whatever happens (`try/finally` — the awful script restores only on success; find that bug, it is real)
 - Non-convergence handled **explicitly**: `status="not_converged"`, never a silent `except: pass`
@@ -72,7 +72,7 @@ Three things about the shape before you start.
 
 **Where the loader goes.** "Reuse" here means *do not port*: `screen_n1` takes a network as its parameter, and whoever calls it — your tests, later the CLI — builds that network with `load_svedala()` from Lab 1 first. So the 30 lines of loading code at the top of the awful script do not move into `screener.py` at all: the function starts where the loop starts, and `screener.py` may not need to import the loader at all.
 
-**The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. "Each line that is in service" is `for idx in net.line.index[net.line.in_service]:` — the `in_service` column is True/False per line, and putting it inside the square brackets keeps only the index labels where it is True; that replaces the awful script's `if ... == True`. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
+**The loop.** For each line that is in service: switch it off, solve, read the results, switch it back on. "Each line that is in service" is `for idx in net.line.index[net.line.in_service]:` — the `in_service` column is True/False per line, and putting it inside the square brackets keeps only the index labels where it is True; that replaces the awful script's `if ... == True`. The line's name for the `outage_line` column is `net.line.at[idx, "name"]`, as in the awful script. `screener.py` needs `import pandapower as pp` and `import pandas as pd` at the top, like `loader.py`. Solving is either `pp.runpp(net)` directly or your own `run_power_flow(net)` from Lab 1 — both are fine; the difference is what they raise when the power flow fails (`pp.LoadflowNotConverged` from pandapower, your `RuntimeError` from the wrapper), and you catch the one your call raises. Same trap as Lab 1: `pp.runpp` works in place and returns nothing — the results are read from `net.res_line` afterwards.
 
 **`try / except / finally`.** You have met `try/except` in LC3; `finally` is new. Its block runs *whichever way the try ended* — after the last line of `try` when nothing went wrong, and after the `except` block when something did:
 
@@ -96,6 +96,22 @@ What each row carries:
 - A not-converged case has no results: give it `float("nan")` for the loading and `-1` for the count — a count that cannot be a real count, so nobody reads it as "zero violations".
 
 Collect one dictionary per outage in a list and hand the list to `pd.DataFrame(rows)` at the end — it becomes one row per dictionary, columns named by the keys.
+
+To see the table before any test exists, call the function from the command line the way LC3 did (`python -c` runs the quoted code as a one-line program; the venv must be active):
+
+```bash
+python -c "from svedala_toolbox.loader import load_svedala; from svedala_toolbox.screener import screen_n1; print(screen_n1(load_svedala()))"
+```
+
+On the reference solution the first and last rows print as:
+
+```
+    outage_idx outage_line     status  max_loading_percent  n_violations
+0            0         RL1  converged            94.793637             0
+1            1         CL5  converged            94.922010             0
+...
+51          89         CL3  converged            95.199869             0
+```
 
 *Optional upgrade from LC3: the lecture offered `class PowerFlowError(RuntimeError)` as the step up from Lab 1's plain `RuntimeError`. If you take it, define it in `loader.py` and raise it from `run_power_flow` — everything that catches `RuntimeError` still works, because a `PowerFlowError` **is** one.*
 
@@ -170,11 +186,11 @@ def test_restores_lines_even_when_power_flow_fails():
     assert net.line.in_service.all(), "a failed power flow left its outage behind"
 ```
 
-`net.load["scaling"]` is pandapower's per-load multiplier, the column your Lab 1 CLI sets for `--scaling`. On the reference solution at 1.05, 21 of the 52 contingencies do not converge and all 52 lines are back in service afterwards. With the restore bug, 42 do not converge and only 10 lines are left in service: every failed case leaves its line out, making the next case worse. Do not assert the 21 — assert that *some* case failed and that the network is whole; the exact count is the solver's business.
+`net.load["scaling"]` is pandapower's per-load multiplier, the column your Lab 1 CLI sets for `--scaling` — if your CLI wrote it as `net.load.scaling`, that is the same column, dot and brackets being two spellings of one thing in pandas. On the reference solution at 1.05, 21 of the 52 contingencies do not converge and all 52 lines are back in service afterwards. With the restore bug, 42 do not converge and only 10 lines are left in service: every failed case leaves its line out, making the next case worse. Do not assert the 21 — assert that *some* case failed and that the network is whole; the exact count is the solver's business.
 
 **Checkpoint:** `pytest tests/ -q` → `ssss...ss....s.` and `8 passed, 7 skipped`.
 
-Now make the new test earn its place — Lab 1's rule again, a test you have never seen fail proves nothing. Move the restore line in `screener.py` from `finally:` to the end of the `try:` block, right after the line that reads the results (the awful script's version), and run `pytest tests/ -q` once more. On the reference solution the first three screener tests still pass and the fourth fails:
+Now make the new test earn its place — Lab 1's rule again, a test you have never seen fail proves nothing. Move the restore line in `screener.py` from `finally:` to the end of the `try:` block, after the line that computes `n_violations` (the awful script's version), and delete the now-empty `finally:` line too — a `finally:` with nothing under it is a syntax error (`IndentationError: expected an indented block`), and pytest would then report a collection error on every screener test instead of the red run below. Run `pytest tests/ -q` once more. On the reference solution the first three screener tests still pass and the fourth fails:
 
 ```
 E       AssertionError: a failed power flow left its outage behind
