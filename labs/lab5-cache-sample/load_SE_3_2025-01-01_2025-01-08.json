@@ -1,0 +1,10 @@
+{
+  "source": "course sample (D6 proxy of ENTSO-E query_load, zone MITT = SE_3)",
+  "zone": "SE_3",
+  "period": [
+    "2025-01-01",
+    "2025-01-08"
+  ],
+  "retrieved_utc": "2026-09-06T12:00:00+00:00",
+  "unit": "MW, hourly mean"
+}
