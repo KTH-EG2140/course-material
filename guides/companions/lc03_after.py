@@ -3,6 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
+# Relative to where you RUN this script: fine for a demo started from the repo
+# root, not for a package. loader.py in your workbook shows the robust form,
+# anchored on the module's own location (__file__).
 DATA_DIR = Path("data/svedala")
 
 
