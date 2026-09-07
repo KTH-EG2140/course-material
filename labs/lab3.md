@@ -17,7 +17,7 @@ pip install -r requirements.txt
 svedala pf                           # proves the clone works before you branch
 ```
 
-The first `svedala pf` (or the first `pytest`) in a fresh environment can sit silent for a few minutes: numba, the accelerator in `requirements.txt`, compiles pandapower's solver once and caches it. Every later run takes seconds.
+The first `svedala pf` (or the first `pytest`) in a fresh environment sits silent for a while — twenty seconds on a fast laptop, minutes on a slow one: numba, the accelerator in `requirements.txt`, compiles pandapower's solver once and caches it. Every later run takes seconds.
 
 ## 1. The staged collision (60 min)
 
@@ -26,7 +26,7 @@ Both of you work on the host's repository, each on your own laptop, each on your
 1. **Branch out.** Each partner, from an up-to-date `main` (`git switch main && git pull` first — `switch -c` creates the branch and moves you onto it, as in LC4 Part A):
 
    - Partner A: `git switch -c feature/load-scaling`. In `cmd_pf`, refuse a non-positive `--scaling` before loading the network — `raise SystemExit(f"--scaling must be positive, got {args.scaling}")` (raising `SystemExit` with a message prints it and stops the program with an error code, the polite way for a command-line tool to say no) — **and** add the factor to the end of the summary line the command prints, e.g. `| scaling 1.05`.
-   - Partner B: `git switch -c feature/result-export`. Add `--out FILE` to the `pf` command: an `add_argument("--out", default=None, help=...)` next to `--scaling` in `main()`, and in `cmd_pf`, after the power flow, `net.res_line.to_csv(args.out)` when `args.out` is set — **and** add `| written to <file>` to the end of the same summary line, only when a file was written. One way: build the suffix before the print, `written = f" | written to {args.out}" if args.out else ""` — Python's one-line form of *this value if the condition holds, otherwise that one* — and append `+ written` to the summary string.
+   - Partner B: `git switch -c feature/result-export`. Add `--out FILE` to the `pf` command: an `add_argument("--out", default=None, help="write the line results to this CSV file")` next to `--scaling` in `main()`, and in `cmd_pf`, right after the summary print, `net.res_line.to_csv(args.out)` when `args.out` is set — **and** add `| written to <file>` to the end of the same summary line, only when a file was written. One way: build the suffix before the print, `written = f" | written to {args.out}" if args.out else ""` — Python's one-line form of *this value if the condition holds, otherwise that one* — and append `+ written` to the summary string.
 
    Both of you edit the one `print(...)` at the end of `cmd_pf`. That is the collision, and it is guaranteed: two different edits to the same line are the one thing git will not merge without a human.
 
@@ -37,6 +37,8 @@ git add src/svedala_toolbox/cli.py
 git commit -m "pf: reject non-positive --scaling, show the factor in the summary"   # B: your own message
 git push -u origin feature/load-scaling                                             # B: feature/result-export
 ```
+
+   Name the file, not `-A`: B's trial run of `--out` left a `results.csv` in the folder, and that is output, not work.
 
 3. **PR #1: the easy one.** Partner A opens a Pull Request on GitHub: **Pull requests** tab → **New pull request** → base `main`, compare `feature/load-scaling` → **Create**. Partner B reviews it: **Files changed** shows the diff; hover a line and click the **+** to comment on it — at least one comment — then **Merge pull request**. Both of you: `git switch main && git pull`.
 
@@ -51,6 +53,7 @@ git merge origin/main          # merge it into the branch you are standing on
    The merge stops with:
 
 ```
+Auto-merging src/svedala_toolbox/cli.py
 CONFLICT (content): Merge conflict in src/svedala_toolbox/cli.py
 Automatic merge failed; fix conflicts and then commit the result.
 ```
@@ -69,7 +72,7 @@ Automatic merge failed; fix conflicts and then commit the result.
 >>>>>>> origin/main
 ```
 
-   `HEAD` is the branch you are standing on (B's export), the part after `=======` is what came from `origin/main` (A's scaling). Your region will not look exactly like this — which lines fall inside the markers depends on where each of you put things — but the three marker lines are always there, and the question is always the same. Same question as LC4 Part B: which truth wins? **Both.** Edit the region into one print statement that carries the scaling factor *and* the file name, keep the `to_csv` lines, delete the three marker lines, then:
+   `HEAD` is the branch you are standing on (B's export), the part after `=======` is what came from `origin/main` (A's scaling). Your region will not look exactly like this — which lines fall inside the markers depends on where each of you put things — but the three marker lines are always there, and the question is always the same. Same question as LC4 Part B: which truth wins? **Both.** Edit the region into one print statement that carries the scaling factor *and* the file name, keep the `to_csv` lines wherever they ended up (inside the region or just outside it), delete the three marker lines, then:
 
 ```bash
 git add src/svedala_toolbox/cli.py
@@ -111,7 +114,7 @@ load 11530.3 MW | losses 466.4 MW | worst line 110.7% | V 0.779-1.117 pu | scali
 * 12d237c Lab 1 state
 ```
 
-Five commits of yours, three merges — and every line of history says what happened.
+Five commits of yours, three merges — and every line of history says what happened. (Below `Lab 1 state` the template's own history continues; the excerpt stops there.)
 
 ## 2. Git archaeology (40 min)
 
@@ -140,7 +143,7 @@ FAILED test_limits.py::test_known_levels - assert 9.0 == 0.9
 1 failed, 1 passed in 0.01s
 ```
 
-**One test fails**: the 135 kV current limit comes back as 9.0 kA instead of 0.9 — ten times too large, the kind of number that makes every overload disappear. It passed once. Some commit in this history broke it, and the messages are no help (read them; that is realistic):
+**One test fails**: the 135 kV current limit comes back as 9.0 kA instead of 0.9 — ten times too large, the kind of number that makes every overload disappear. (From now on `git status` also lists a `__pycache__` folder as untracked — Python's compiled cache from the test run; ignore it throughout.) It passed once. Some commit in this history broke it, and the messages are no help (read them; that is realistic):
 
 ```bash
 git log --oneline
@@ -171,7 +174,7 @@ git checkout 5c68d36
 python -m pytest -q
 ```
 
-   `git checkout <hash>` answers with a long note that begins `You are in 'detached HEAD' state`, and `git status` says `HEAD detached at 5c68d36`: you are looking at an old snapshot, not standing on any branch — reading is fine, committing here is not. The tests pass at that commit, so the bug came later; pick a commit between there and the top, check it out, test again. Each round halves what is left — feel the binary search you are doing. (After a test run, `git status` lists a `__pycache__` folder as untracked; that is Python's compiled cache, ignore it.) When you have your suspect, come back to the branch:
+   `git checkout <hash>` answers with a long note that begins `You are in 'detached HEAD' state`, and `git status` says `HEAD detached at 5c68d36`: you are looking at an old snapshot, not standing on any branch — reading is fine, committing here is not. The tests pass at that commit, so the bug came later; pick a commit between there and the top, check it out (from the second checkout on git only says `Previous HEAD position was ...` / `HEAD is now at ...`), test again. Each round halves what is left — feel the binary search you are doing. When you have your suspect, come back to the branch:
 
 ```bash
 git switch main
