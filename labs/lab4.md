@@ -14,7 +14,9 @@ Each pair receives **one script**: a short Svedala security summary that imports
 git switch main && git pull
 ```
 
-Open it. The script is small: one function, `summarise(net)`, that runs your `run_power_flow` and your `screen_n1` and returns a dictionary of five headline numbers — base-case violations and worst loading, number of contingencies screened, how many cause violations, the worst outage and its loading — plus an `if __name__ == "__main__":` block that prints three lines from that dictionary. Run it from the repo root with the venv active:
+(If you still have Lab 2 commits that were never pushed, `git pull` merges our commit with yours and says so — push your own work first and the pull is a plain fast-forward.)
+
+Open it. The script is small: one function, `summarise(net)`, that runs your `run_power_flow` and your `screen_n1` and returns a dictionary of six headline numbers — base-case violations and worst loading, number of contingencies screened, how many cause violations, the worst outage and its loading — plus an `if __name__ == "__main__":` block that prints three lines from that dictionary. Four of the six are counts or names; the two loadings are floats — remember that when you write the test. Run it from the repo root with the venv active:
 
 ```bash
 python lab4/security_summary.py
@@ -24,7 +26,7 @@ It runs without crashing. It prints plausible numbers. **Exactly one of them is 
 
 The rules, in this order:
 
-1. **Find it by reading and by suspicion.** You know this network cold by now. Your `svedala pf` output from Lab 1 holds the true base-case numbers; your Lab 2 oracle holds the true contingency count, the number of dangerous outages and the worst one. Which printed line contradicts what you know? (That knowledge is your real debugging tool. Someone who has never run Svedala cannot do this lab.) Then read `summarise` line by line until you can point at the cause.
+1. **Find it by reading and by suspicion.** You know this network cold by now. Your `svedala pf` output from Lab 1 holds the true base-case numbers; your Lab 2 oracle holds the true contingency count, the number of dangerous outages and the worst one. Which printed line contradicts what you know? (That knowledge is your real debugging tool. Someone who has never run Svedala cannot do this lab.) Then read `summarise` line by line until you can point at the cause. Expect pandas you have not seen — the author was an AI and it writes dense; when a line resists reading, run it on its own with `python -c` and print the length or the head of what it produces, as you did with the screener table in Lab 2.
 
 2. **Write the test that catches it — before touching the bug.** Create `lab4/test_security_summary.py`, next to the script:
 
@@ -38,7 +40,9 @@ def test_<what you expect to be true>():
     assert s["<the key that is wrong>"] == <the value you know>, f"got {s['...']}"
 ```
 
-   Two mechanisms, named: pytest puts the test file's own folder on the import path, so `from security_summary import summarise` finds the script sitting next to the test by its file name. And importing the script runs *nothing* — the `if __name__ == "__main__":` guard from LC3 keeps the printing out of the way, so you get the function and only the function. Test the **number in the dictionary**, never the printed sentence: a test that reads printed text is satisfied by editing the text. Run it:
+   For a count or a name, `==` is right. For one of the two loadings, it is not — you know 94.9 from a print with one decimal, the dictionary holds 94.8659..., and `==` stays red *after* a correct fix. Lab 2's rule: compare floats with a tolerance, `assert abs(s["<key>"] - 94.9) < 0.1`.
+
+   Two mechanisms, named: pytest puts the test file's own folder on the import path — the list of folders Python searches when it meets an `import` — so `from security_summary import summarise` finds the script sitting next to the test by its file name. And importing the script runs *nothing* — the `if __name__ == "__main__":` guard from LC3 keeps the printing out of the way, so you get the function and only the function. Test the **number in the dictionary**, never the printed sentence: a test that reads printed text is satisfied by editing the text. Run it:
 
 ```bash
 pytest lab4/ -q
@@ -46,7 +50,9 @@ pytest lab4/ -q
 
    Watch it fail — `1 failed in 2.3s` on the reference, with the `E` line showing the number you got against the number you expected. *This is the step that matters:* the test is your proof you understood the bug, not just spotted it.
 
-3. **Fix the bug minimally.** `pytest lab4/ -q` → `1 passed`. Then the whole suite, `pytest -q` from the repo root: it collects `tests/` and `lab4/` together, so your count is Lab 2's count plus one — `9 passed, 7 skipped` on the reference solution. Did your fix break anything else?
+3. **Fix the bug minimally.** The offending expression, and any line that only existed to feed it — nothing else. `pytest lab4/ -q` → `1 passed`. Then the whole suite, `pytest -q` from the repo root: pytest *collects* (finds and lists) every `test_*.py` under the folder it is started in, so `tests/` and `lab4/` run together and your count is Lab 2's count plus one — `9 passed, 7 skipped` on the reference solution. Did your fix break anything else?
+
+   One honest question before you move on, the Lab 2 question again: would your test also pass a fake fix — the correct number typed into the dictionary as a constant? It would; a test that pins one number on one network cannot tell a computation from a constant. The reading you did in step 1 is what protects you here; the test pins what you learned. If that bothers you, a second assert on the stressed network (`net.load["scaling"] = 1.05`, where the true numbers differ) costs two lines.
 
 4. Commit all three — script, test, fix — with a message that names the bug precisely ("threshold compared in per-unit against percent values", not "fixed bug"):
 
@@ -56,13 +62,13 @@ git commit -m "<what was wrong, in one line>"
 git push
 ```
 
-## Plant your own (last 10 min)
+## Plant your own (last 20 min)
 
-Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod, as a branch in *their* host repo (everyone in the course has push on every workbook repo). Clone their repo if you have not already, then:
+Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod, as a branch in *their* host repo (everyone in the course has push on every workbook repo). Write and try the bug in your *own* repo first, where the venv already works: edit, run `python lab4/security_summary.py`, check that it still runs and prints plausible numbers, then put the file back (`git restore lab4/security_summary.py`). Then clone their repo if you have not already (no venv needed there — you only carry a file), and:
 
 ```bash
 git switch -c lab4/planted-bug
-# edit lab4/security_summary.py; run it once - it must still run and print plausible numbers
+# copy your edited lab4/security_summary.py over theirs
 git add lab4/security_summary.py
 git commit -m "update summary script"
 git push -u origin lab4/planted-bug
