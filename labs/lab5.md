@@ -27,8 +27,8 @@ Two `s` for two `pytest.skip(...)` placeholders — the tests you replace today.
 Implement `fetch_load(zone, start, end, cache_dir)` in `pipeline.py` following the LC6 pattern:
 
 - **Cache first.** The key is `f"load_{zone}_{start}_{end}"`; the Parquet file `cache_dir / f"{key}.parquet"`. If it exists, read it and return the `load_mw` column — no token needed, no network touched.
-- **On a miss**, fetch with entsoe-py exactly as LC6's `cached_load` did, resample to hourly, convert the index to UTC, write the Parquet, and write the JSON sidecar next to it (source, zone, period, `retrieved_utc`, unit). Put `from entsoe import EntsoePandasClient` *inside* the function, as LC6 did: an import inside a function runs only when that function reaches it, so a machine that only ever hits the cache never needs the library to work.
-- **Token order**: environment variable, then the file, and if neither exists raise a `RuntimeError` that says so. On the reference solution a cache miss without a token stops with:
+- **On a miss**, fetch with entsoe-py exactly as LC6's `cached_load` did, resample to hourly, convert the index to UTC (`series.index = series.index.tz_convert("UTC")` — LC6 left it in Swedish time; the toolbox stores UTC only), create the cache folder if needed (`cache_dir.mkdir(parents=True, exist_ok=True)`), write the Parquet, and write the JSON sidecar next to it (source, zone, period, `retrieved_utc`, unit). Put `from entsoe import EntsoePandasClient` *inside* the function, as LC6 did: an import inside a function runs only when that function reaches it, so a machine that only ever hits the cache never needs the library to work.
+- **Token order**: environment variable (`os.environ.get("ENTSOE_TOKEN")`), then the file (`Path("entsoe_token.txt")`, read with `.read_text().strip()` — relative to where you run, like LC6, which is fine for a file you only ever use from the repo root; the environment variable is the form that works from anywhere), and if neither exists raise a `RuntimeError` that says so. On the reference solution a cache miss without a token stops with:
 
 ```
 RuntimeError: no ENTSO-E token: set ENTSOE_TOKEN or create entsoe_token.txt (never commit it)
@@ -57,11 +57,11 @@ def test_fetch_uses_cache_without_token(monkeypatch):
 
 `monkeypatch` is a pytest fixture (LC5): it changes something for the duration of one test and undoes it afterwards — here it makes sure the test cannot accidentally use your token. Match the zone and dates to your sample's file name.
 
-**Checkpoint:** `pytest tests/test_pipeline.py -q` → `1 passed, 1 skipped`. Commit — the two sample files included, `data_cache/` itself not (add `data_cache/` to `.gitignore`).
+**Checkpoint:** `pytest tests/test_pipeline.py -q` → `1 passed, 1 skipped`. Commit — the two sample files included, `data_cache/` itself not (check `.gitignore` for a `data_cache/` line; newer template repos have it, older ones need it added).
 
 ## 2. Clean, with a repairs log (~40 min)
 
-Implement `clean_load(series) -> (series, repairs)` doing, in order: UTC index enforcement, de-duplication, impossible-value removal (negative values, and spikes further than 4 standard deviations from a 49-hour centred rolling median — the LC7 rule), interpolation of gaps ≤ 3 h. `repairs` is a list of human sentences — the LC7 habit. Name the rules as constants at the top of the module (`SPIKE_WINDOW_H = 49`, `SPIKE_SIGMAS = 4.0`, `MAX_GAP_H = 3`) so the log can quote them.
+Implement `clean_load(series) -> (series, repairs)` — a function returning two things returns them as a pair, `return s, repairs`, and the caller unpacks it the same way, `cleaned, repairs = clean_load(...)` — doing, in order: UTC index enforcement (then `sort_index()`, as LC7 did), de-duplication, impossible-value removal (negative values, and spikes further than 4 standard deviations from a 49-hour centred rolling median — the LC7 rule), interpolation of gaps ≤ 3 h. `repairs` is a list of human sentences — the LC7 habit. Name the rules as constants at the top of the module (`SPIKE_WINDOW_H = 49`, `SPIKE_SIGMAS = 4.0`, `MAX_GAP_H = 3`) so the log can quote them.
 
 - **UTC**: a tz-aware index gets `tz_convert("UTC")`; a naive one is LC7's case — Swedish local time — so `tz_localize("Europe/Stockholm", ambiguous="infer", nonexistent="shift_forward")` first, and a log sentence saying you assumed that.
 - **Duplicates**: `s.index.duplicated()` marks the repeats; keep the first, log how many went.
@@ -75,7 +75,7 @@ short_gap = s.isna() & (gap_len <= MAX_GAP_H)
 s[short_gap] = s.interpolate(limit_area="inside")[short_gap]
 ```
 
-  `cumsum()` on the True/False of `notna()` increases by one at every real value and stays flat across a gap, so all hours of one gap share a number; grouping on that number and summing `isna()` gives each gap its length. **Decide and document**: what does your function do with a 72-hour gap, and why? The reference leaves it as NaN — inventing three days of load would be a forecast, not a repair — and says so in the docstring and the log.
+  `cumsum()` on the True/False of `notna()` increases by one at every real value and stays flat across a gap, so all hours of one gap share a number; grouping on that number and summing `isna()` gives each gap its length, `transform` writing that length back onto every hour of the gap. `limit_area="inside"` tells `interpolate` to fill only *between* two real values, never to extend past the first or last one. **Decide and document**: what does your function do with a 72-hour gap, and why? The reference leaves it as NaN — inventing three days of load would be a forecast, not a repair — and says so in the docstring and the log.
 
 Replace the second placeholder. The hard part of testing a cleaner is having something dirty; build it by hand, small, so you know exactly what is wrong with it:
 
@@ -109,7 +109,7 @@ Then the asserts are yours: no duplicated index entries, nothing negative among 
 
 ## 3. Store and query (~25 min)
 
-`store(series, db_path)` writes Parquet next to `db_path` (`db_path.with_suffix(".parquet")`) and registers it in a DuckDB database:
+`store(series, db_path)` writes Parquet next to `db_path` (`db_path = Path(db_path)` first, as in `fetch_load`, then `db_path.with_suffix(".parquet")`) and registers it in a DuckDB database:
 
 ```python
 import duckdb                          # inside store(): only this function needs it
@@ -120,7 +120,12 @@ con.close()
 
 `CREATE OR REPLACE` makes a rerun harmless — LC7's rule that a pipeline must be safe to run twice. Write the Series as a two-column table (`series.rename("load_mw").to_frame().reset_index()`), so the timestamp is a column DuckDB can query, not an index it cannot see.
 
-Add one query function the pair designs itself — daily peaks, morning ramp, weekend/weekday means, your choice — and use it in a short demo in your README. The reference's `daily_peaks(db_path)` on the sample week:
+Add one query function the pair designs itself — daily peaks, morning ramp, weekend/weekday means, your choice — and use it in a short demo in your README. Open the database for a query with `duckdb.connect(str(db_path), read_only=True)`: a read-only connection cannot change the file, which is the right setting for anything that only asks questions. One trap in date arithmetic: the stored timestamps carry a time zone, and DuckDB truncates them to days in *your machine's* time zone — a pair in Stockholm gets days that start at `00:00+01:00`, a pair elsewhere gets different days and possibly different peaks. Say which clock you mean: `date_trunc('day', timestamp AT TIME ZONE 'UTC')`. The reference's `daily_peaks(db_path)` on the sample week:
+
+```sql
+SELECT date_trunc('day', timestamp AT TIME ZONE 'UTC') AS day, max(load_mw) AS peak_mw
+FROM hourly GROUP BY day ORDER BY day
+```
 
 ```
          day  peak_mw
@@ -129,7 +134,7 @@ Add one query function the pair designs itself — daily peaks, morning ramp, we
 2 2025-01-03   4630.2
 ```
 
-A third test, with pytest's `tmp_path` fixture (a fresh empty folder that pytest creates for the test and deletes afterwards, so no database file is left in your repo): clean the dirty series, `store` it into `tmp_path / "test.duckdb"`, open the database read-only and `SELECT count(*) FROM hourly` — 200 rows. Add `*.duckdb` and `*.parquet` at the repo root to `.gitignore` — the committed sample under `tests/data/` is the one Parquet that belongs in the history.
+A third test, with pytest's `tmp_path` fixture (a fresh empty folder that pytest creates for the test and deletes afterwards, so no database file is left in your repo): clean the dirty series, `store` it into `tmp_path / "test.duckdb"`, open the database read-only and `SELECT count(*) FROM hourly` — 200 rows. The demo's `svedala.duckdb` and `svedala.parquet` land in the repo root and must not be committed: `.gitignore` needs `*.duckdb` (newer template repos have it) and `/*.parquet` — the leading slash anchors the pattern to the repo root, so the committed sample under `tests/data/` stays tracked; a bare `*.parquet` would silently hide any sample you add later.
 
 **Checkpoint:** `pytest tests/ -q`. On the reference solution:
 
