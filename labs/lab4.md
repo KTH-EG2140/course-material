@@ -22,11 +22,11 @@ Open it. The script is small: one function, `summarise(net)`, that runs your `ru
 python lab4/security_summary.py
 ```
 
-It runs without crashing. It prints plausible numbers. **Exactly one of them is wrong, because the script contains one planted bug.** These bugs were written by an AI — in four weeks you will be reviewing its code daily; consider this a first taste of the genre: confident, tidy, wrong.
+It runs without crashing. It prints plausible numbers. **Exactly one printed number is wrong, because the script contains one planted bug.** These bugs were written by an AI — in four weeks you will be reviewing its code daily; consider this a first taste of the genre: confident, tidy, wrong.
 
 The rules, in this order:
 
-1. **Find it by reading and by suspicion.** You know this network cold by now. Your `svedala pf` output from Lab 1 holds the true base-case numbers; your Lab 2 oracle holds the true contingency count, the number of dangerous outages and the worst one. Which printed line contradicts what you know? (That knowledge is your real debugging tool. Someone who has never run Svedala cannot do this lab.) Then read `summarise` line by line until you can point at the cause. Expect pandas you have not seen — the author was an AI and it writes dense; when a line resists reading, run it on its own with `python -c` and print the length or the head of what it produces, as you did with the screener table in Lab 2.
+1. **Find it by reading and by suspicion.** You know this network cold by now. Your `svedala pf` output from Lab 1 holds the true base-case numbers; Lab 2 holds the rest — the awful script's 52 lines and 15 `DANGER` lines, the oracle's worst row (a count of rows with `n_violations > 0` is one pandas line away, as in your oracle test). Which printed line contradicts what you know? (That knowledge is your real debugging tool. Someone who has never run Svedala cannot do this lab.) Then read `summarise` line by line until you can point at the cause. Expect pandas you have not seen — the author was an AI and it writes dense; when a line resists reading, run it on its own with `python -c` and print the length or the head of what it produces, as you did with the screener table in Lab 2.
 
 2. **Write the test that catches it — before touching the bug.** Create `lab4/test_security_summary.py`, next to the script:
 
@@ -52,7 +52,7 @@ pytest lab4/ -q
 
 3. **Fix the bug minimally.** The offending expression, and any line that only existed to feed it — nothing else. `pytest lab4/ -q` → `1 passed`. Then the whole suite, `pytest -q` from the repo root: pytest *collects* (finds and lists) every `test_*.py` under the folder it is started in, so `tests/` and `lab4/` run together and your count is Lab 2's count plus one — `9 passed, 7 skipped` on the reference solution. Did your fix break anything else?
 
-   One honest question before you move on, the Lab 2 question again: would your test also pass a fake fix — the correct number typed into the dictionary as a constant? It would; a test that pins one number on one network cannot tell a computation from a constant. The reading you did in step 1 is what protects you here; the test pins what you learned. If that bothers you, a second assert on the stressed network (`net.load["scaling"] = 1.05`, where the true numbers differ) costs two lines.
+   One honest question before you move on, the Lab 2 question again: would your test also pass a fake fix — the correct number typed into the dictionary as a constant? It would; a test that pins one number on one network cannot tell a computation from a constant. The reading you did in step 1 is what protects you here; the test pins what you learned. If that bothers you, a second check on the stressed network costs four lines — load a network, set `net.load["scaling"] = 1.05`, call `summarise` on it, and assert the same key against the number your own `svedala pf --scaling 1.05` printed in Lab 1 (a second full screening, so the test takes twice as long).
 
 4. Commit all three — script, test, fix — with a message that names the bug precisely ("threshold compared in per-unit against percent values", not "fixed bug"):
 
@@ -64,7 +64,7 @@ git push
 
 ## Plant your own (last 20 min)
 
-Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod, as a branch in *their* host repo (everyone in the course has push on every workbook repo). Write and try the bug in your *own* repo first, where the venv already works: edit, run `python lab4/security_summary.py`, check that it still runs and prints plausible numbers, then put the file back (`git restore lab4/security_summary.py`). Then clone their repo if you have not already (no venv needed there — you only carry a file), and:
+Take the clean script, plant **one** bug of your own — subtle, plausible, and wrong in a way a test could catch — and deliver it to the other pair in your pod, as a branch in *their* host repo (everyone in the course has push on every workbook repo). Write and try the bug in your *own* repo first, where the venv already works: edit, run `python lab4/security_summary.py`, check that it still runs and prints plausible numbers, then put the file back — `git restore lab4/security_summary.py` returns a file to its last committed state, safe here because the clean version is committed. Then clone their repo if you have not already (`https://github.com/KTH-EG2140/p1-workbook-<their host's username>.git`; no venv needed there — you only carry a file), and:
 
 ```bash
 git switch -c lab4/planted-bug
