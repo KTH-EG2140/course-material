@@ -8,13 +8,17 @@ Work in a scratch copy — not your toolbox: `mkdir git-practice && cd git-pract
 
 ## Part A — Branches (10 min)
 
+Two lines of shell before the first command, because it is the guide's workhorse: `echo "text" > file` writes a file containing that one line — creating it, or **overwriting** it if it exists — and `>>` appends a line instead. It is the fastest way to make a file worth versioning without leaving the terminal. The difference between `>` and `>>` is not a typo anywhere below: Part B's conflict and Part E's silent breakage both turn on an overwrite.
+
 ```bash
 echo "limits = {400: 2.0}" > limits.py
 git add -A && git commit -m "Start limits table"
 git switch -c add-220kv          # create + switch to a branch
 echo "limits[220] = 1.0" >> limits.py
+cat limits.py                    # two lines now: the table and the appended 220 kV entry
 git commit -am "Add 220 kV limit"
 git switch main                  # look: your change is gone...
+cat limits.py                    # one line again - main never saw the second
 git log --all --oneline          # ...no — it lives on the branch
 ```
 
@@ -26,6 +30,7 @@ Create a conflict on purpose. On `main`:
 
 ```bash
 echo "limits = {400: 2.1}  # updated per planning dept" > limits.py
+cat limits.py                    # the single line, overwritten: 2.1 now, and no 220 kV entry
 git commit -am "Update 400 kV limit"
 git merge add-220kv
 ```
@@ -44,6 +49,7 @@ limits[220] = 1.0
 Git is not broken — it is *asking you a question* no algorithm can answer: which truth wins? Edit the file to the version that keeps **both** intents (the 2.1 value *and* the 220 kV entry), delete the markers, then:
 
 ```bash
+cat limits.py                    # your resolution: 2.1 on the first line, the 220 kV line under it, no markers
 git add limits.py && git commit -m "Merge add-220kv, keep updated 400 kV value"
 ```
 
@@ -83,7 +89,7 @@ def test_limit_is_sane():
     assert float(open("limit.txt").read()) < 3
 ```
 
-Then the five commits:
+Then the five commits. Two files on purpose: the `notes.txt` commits are the innocent ones bisect must walk past — a haystack with one needle.
 
 ```bash
 echo "2.1" > limit.txt
