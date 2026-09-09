@@ -2,3 +2,6 @@ notebooks/data_cache/
 notebooks/*.duckdb
 notebooks/*_clean.parquet
 .ipynb_checkpoints/
+
+# Secrets students may keep next to a notebook - never committed
+notebooks/entsoe_token.txt
