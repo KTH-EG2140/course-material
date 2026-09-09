@@ -2,6 +2,8 @@
 
 *EG2140 · **self-paced** — do it with your lab partner during the week; your pod is first support (partner → pod → Discussions → the TA sessions) · ~110 min · host repo: the partner whose name comes LAST alphabetically in today's pair. Quiz 2 at its sitting reads Lecturecises 6–7 and this lab's working method; the room then stays open as a TA session. No AI tools.*
 
+**Before you start.** Section 1 builds on the LC6 notebook (the cache and the sidecar); sections 2 and 3 build on the LC7 notebook (DST-safe timestamps, the rolling-median spike rule, the gap-length idiom, DuckDB). Walk both notebooks first — each has a "what you take to Lab 5" section at its end; without them the code below asks for constructs this lab does not teach.
+
 Lecturecises 6 and 7 did this in a notebook. A notebook is where analysis is *found*; the toolbox is where it goes to *live*. This lab moves the pattern into `svedala_toolbox` as tested, rerunnable code.
 
 ## 0. Setup (10 min)
