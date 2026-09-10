@@ -11,7 +11,7 @@ the security boundary.
 **Columns:** `ZON_*` (MW), `total_mw`, `temp_north/mid/south` (°C, zone anchor
 sites Luleå/Stockholm/Malmö). Timestamps UTC.
 
-Used by: Lab 6 (SSH assembly — see `ssh_week/`), Lab 7 (SARIMA), Lab 8
+Used by: Lab 6 (SSH assembly — `ssh_week.zip`), Lab 7 (SARIMA), Lab 8
 (security labels come from YOUR screener, not this file), Lab 9 (forecast
 comparison with temperature covariate).
 

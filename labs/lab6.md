@@ -17,24 +17,30 @@ The week of snapshots (`ssh_week.zip`, 21 MB) stays in the course-material clone
 
 ## 1. The EQ join (~30 min)
 
-Implement `load_zone_map(eq_path, csv_dir)` in `src/svedala_toolbox/cim.py` (the stub is there; its docstring is the specification). The chain is mRID → name (EQ) → bus (`loads.csv`) → zone (`buses.csv`). LC8's EQ regex gives you the first step verbatim; `pd.read_csv(csv_dir / "loads.csv", index_col=0)` and the same for `buses.csv` give the other two, and a dictionary built from `loads.csv` — `{row["name"]: zone_of_bus[row["bus"]] for _, row in loads.iterrows()}` (`iterrows()` walks a table one row at a time, as `(index, row)` pairs) — is the name → zone lookup.
+Implement `load_zone_map(eq_path, csv_dir)` in `src/svedala_toolbox/cim.py` (the stub is there; its docstring is the specification). It returns a dictionary **keyed by mRID**, value the zone — the name is only a stepping stone. The chain is mRID → name (EQ) → bus (`loads.csv`) → zone (`buses.csv`). LC8's EQ regex gives you the first step verbatim; `pd.read_csv(csv_dir / "loads.csv", index_col=0)` and the same for `buses.csv` give the other two, and a dictionary built from `loads.csv` — `{row["name"]: zone_of_bus[row["bus"]] for _, row in loads.iterrows()}` (`iterrows()` walks a table one row at a time, as `(index, row)` pairs) — is the name → zone lookup.
 
 Two traps, both real:
 
 - `buses.csv` has a column called `zone`. It holds the **substation** name (`AGGAN CT11`), not the zone. The `ZON_*` zone is the column `SubGeographicalRegion_name` — the one your Lab 1 loader used for `zone=`. Map through that column or every load lands in its own "zone".
 - The EQ knows 73 ConformLoads; the CSVs know 60; only **55** carry the same name in both. The 18 EQ-only loads (all `ST…` stations) draw about 60 MW in the base snapshot and about 37 MW on average in the week — real power that no zone column will receive. **Decide** what to do with them and write the decision down: dropping them silently is the one wrong answer. The reference keeps them under a fifth key, `"unmapped"`, so their megawatts stay visible in the table.
 
-Log the unmapped ones with `logging` (LC3 Part B: a module asks for a logger named after itself, never configures anything). On the reference solution the logger line reads:
+Log the unmapped ones with `logging` at level `INFO` (LC3 Part B: a module asks for a logger named after itself and never configures anything — which means the line is **silent by default**; you see it only when the program that calls you switches it on, as LC3 B4 did with `logging.basicConfig(level=logging.INFO)`). On the reference solution, with INFO switched on, the line reads:
 
 ```
-zone map: 55 loads mapped, 18 unmapped: ['ST13_T1_LAST', 'ST14_T1_LAST', 'ST16_T1_LAST', ...]
+INFO:svedala_toolbox.cim:zone map: 55 loads mapped, 18 unmapped: ['ST13_T1_LAST', 'ST14_T1_LAST', 'ST16_T1_LAST', ...]
 ```
 
-**Checkpoint:** in a scratch cell or `python -c`, `len([z for z in load_zone_map(...).values() if z != "unmapped"])` is 55. Commit: `git add src/svedala_toolbox/cim.py` and a message that says what the map does.
+**Checkpoint:** from the repo root, with the venv active:
+
+```bash
+python -c "import logging; logging.basicConfig(level=logging.INFO); from svedala_toolbox.cim import load_zone_map; m = load_zone_map('data/svedala-cim/network_EQ.xml', 'data/svedala'); print(len([z for z in m.values() if z != 'unmapped']), 'mapped')"
+```
+
+prints the INFO line above and then `55 mapped`. Commit: `git add src/svedala_toolbox/cim.py` and a message that says what the map does.
 
 ## 2. One snapshot → one row (~25 min)
 
-Implement `parse_ssh(path_or_bytes, zone_map)` returning `(timestamp, {zone: MW})`. Two things to read from the file: `Model.scenarioTime` (LC8's `scenarioTime>([^<]+)<` pattern; `pd.Timestamp("2025-01-13T00:00:00Z")` parses the string, and the `Z` makes it UTC) and every ConformLoad's `EnergyConsumer.p` (LC8's SSH pattern). Sum per zone as you go: `per_zone[zone] = per_zone.get(zone, 0.0) + float(p)` — `dict.get(key, default)` gives the running total or 0.0 the first time a zone appears.
+Implement `parse_ssh(source, zone_map)` returning `(timestamp, {zone: MW})`. Two things to read from the file: `Model.scenarioTime` (LC8's `scenarioTime>([^<]+)<` pattern; `pd.Timestamp("2025-01-13T00:00:00Z")` parses the string, and the `Z` makes it UTC) and every ConformLoad's `EnergyConsumer.p` (LC8's SSH pattern). Sum per zone as you go: `per_zone[zone] = per_zone.get(zone, 0.0) + float(p)` — `dict.get(key, default)` gives the running total or 0.0 the first time a zone appears.
 
 `source` may be a path *or* the bytes `zipfile` hands you in section 3; `bytes` needs `.decode("utf-8")`, a path needs `.read_text(encoding="utf-8")` — check with `isinstance(source, bytes)`.
 
@@ -62,19 +68,25 @@ timestamp
 2025-01-13 01:00:00+00:00     577.2      1313.5    3948.2        978.1      37.4
 ```
 
-168 hours, UTC, the five columns your policy produced (four if you dropped the unmapped loads — then say so). Plot it: `df[zones].plot(figsize=(10, 3))`.
+168 hours, UTC, the five columns your policy produced (four if you dropped the unmapped loads — then say so). If your terminal hides a column behind `...`, that is pandas fitting the window, not a missing column — `pd.set_option("display.width", 200)` widens it. Plot it, the four zones only:
+
+```python
+zones = ["ZON_NORR", "ZON_MITT", "ZON_SYDVÄST", "ZON_EXTERN"]
+week[zones].plot(figsize=(10, 3))
+```
 
 Then the real test — **compare your week against the course dataset**, the same seven days of `svedala_hourly.parquet`:
 
 ```python
 ref = pd.read_parquet("<cm>/data/svedala-year/svedala_hourly.parquet").loc[week.index]
 rel = (week[zones] - ref[zones]) / ref[zones]          # relative deviation, hour by hour, zone by zone
-print(rel.mean().round(4), rel.abs().max().max())
+print((rel.mean() * 100).round(2))                     # mean deviation per zone, in percent
+print(round(rel.abs().max().max() * 100, 2), "% largest single-hour deviation")
 ```
 
 `.loc[week.index]` picks the reference rows at exactly your timestamps — both indexes are UTC, so they align. On the reference solution the per-zone mean deviation is 0.00 % for three zones and −0.76 % for `ZON_MITT`, the largest single-hour deviation 0.76 %, and the total over the four zones runs 0.42 % below the parquet — which is almost exactly the unmapped column: add it back and the total agrees to 0.12 %. **The residual is your unmapped loads**, and they sit in `ZON_MITT`. State the number and its explanation in your README — a comparison without a tolerance is not a comparison; start from 2 % per zone and tighten to what you measured.
 
-**Tests** — two, in `tests/test_cim.py` (replace the two placeholders, keep the function names): the zone map covers at least 55 loads, and `assemble_series` on a small zip gives the right shape. CI must stay fast, so the test reads a **3-file mini-zip** you build once from the week and commit under `tests/data/`:
+**Tests** — two, in `tests/test_cim.py` (replace the two placeholders, keep the function names): the zone map covers at least 55 loads, and `assemble_series` on a small zip gives the right shape. CI must stay fast, so the test reads a **3-file mini-zip** you build once from the week and commit under `tests/data/` — create that folder first (`mkdir -p tests/data`; the template does not have it), then in a scratch cell or a one-off script:
 
 ```python
 import zipfile
@@ -84,9 +96,9 @@ with zipfile.ZipFile("tests/data/ssh_mini.zip", "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr(name, src.read(name))
 ```
 
-(`writestr` writes bytes into the new archive under the given name; `ZIP_DEFLATED` compresses — about 380 kB for three files.) Paths inside the tests come from `__file__`, as in Lab 5: `Path(__file__).parent / "data" / "ssh_mini.zip"` for the zip, `Path(__file__).resolve().parents[1] / "data" / "svedala-cim" / "network_EQ.xml"` for the EQ file you committed. The shape test asserts three rows, a UTC index, and the four `ZON_*` columns present.
+(`writestr` writes bytes into the new archive under the given name; `ZIP_DEFLATED` compresses — about 380 kB for three files.) Paths inside the tests come from `__file__`, as in Lab 5: `Path(__file__).parent / "data" / "ssh_mini.zip"` for the zip, and `Path(__file__).resolve().parents[1] / "data" / "svedala-cim" / "network_EQ.xml"` for the EQ file you committed — `parents[1]` is two folders up from the test file, `tests/` then the repo root, the same idea as the loader's `parents[2]`. The shape test asserts three rows (`len(df) == 3`), a UTC index (`str(df.index.tz) == "UTC"`), and the four `ZON_*` columns present (`{"ZON_NORR", ...} <= set(df.columns)` — *is a subset of*).
 
-**Checkpoint:** `pytest tests/test_cim.py -q` → `2 passed`; `pytest -q` → Lab 5's count plus two (`12 passed, 3 skipped` on the reference solution). Commit `cim.py`, the tests, the mini-zip and the README paragraph; push; CI green.
+**Checkpoint:** `pytest tests/test_cim.py -q` → `2 passed`; `pytest -q` → Lab 5's count plus two (`12 passed, 3 skipped` on the reference solution, which has Labs 1–5 done). Commit `cim.py`, the tests, the mini-zip and the README paragraph; push; CI green.
 
 ## 4. Pod check (15 min)
 
