@@ -8,7 +8,7 @@ Lecturecise 9 built the baseline on the course series; this lab makes it **yours
 
 ## 1. Persistence first (~20 min)
 
-Implement `persistence(y, horizon=24)` and `seasonal_persistence(y, horizon=24, season=168)`. Each is one line: `y.shift(horizon)` moves every value `horizon` hours later, so the value at hour *t* is what the series showed at *t − horizon* — "tomorrow = today" for 24, "this Tuesday = last Tuesday" for 168. The first `horizon` hours of the result are `NaN`, because there is nothing to shift in; that is correct, not a bug.
+Implement `persistence(y, horizon=24)` and `seasonal_persistence(y, horizon=24, season=168)`. Each is one line: `y.shift(n)` moves every value `n` hours later, so the value at hour *t* is what the series showed at *t − n* — `y.shift(horizon)` is "tomorrow = today", `y.shift(season)` is "this Tuesday = last Tuesday". The seasonal one does not use `horizon` at all; it keeps the parameter so that every baseline has the same signature and the harness can call them alike — leave it unused and say so in a comment. The first `horizon` hours of the result are `NaN`, because there is nothing to shift in; that is correct, not a bug.
 
 One honesty note the stub also carries: the weekly baseline is *often* the harder one to beat, not always — on the course series' test week it loses to plain persistence (283 MW against 203 MW), because the weather moved more from one week to the next than the weekly shape is worth. Which of the two wins on **your** week is a finding you report, not something you assume.
 
@@ -18,9 +18,23 @@ Then `walk_forward(y, model_fn, test_start, test_end, horizon=24)`. Its contract
 - `train = y.loc[:day - pd.Timedelta(hours=1)]` is everything up to the hour before the day — the *strictly before* is the whole point.
 - `actual = y.loc[day : day + pd.Timedelta(hours=horizon - 1)]` is the day itself.
 - `pd.Series(list(model_fn(train, horizon))[:len(actual)], index=actual.index)` puts the forecast on the same hours, so the two columns line up; `pd.DataFrame({"actual": actual, "forecast": forecast})` is one day's block, and `pd.concat(blocks)` stacks the days.
-- `model_fn` is a *function passed as an argument* — the harness never knows which model it is judging; that is what makes it reusable in Lab 9. If `y` carries a time zone, give `test_start` and `test_end` the same one: `pd.Timestamp(test_start, tz=y.index.tz)`.
+- `model_fn` is a *function passed as an argument* — the harness never knows which model it is judging; that is what makes it reusable in Lab 9.
+- The course series and your Lab 6 series carry a time zone on their index (`y.index.tz` prints `UTC`) — a *tz-aware* index. A plain date string has none, and pandas refuses to compare the two inside one slice (`ValueError: Both dates must have the same UTC offset`). So the first thing `walk_forward` does is convert its two dates: `test_start = pd.Timestamp(test_start, tz=y.index.tz)`, same for `test_end` — inside the function, so callers and tests can pass plain strings.
 
-**Test the harness on a toy series where you know the answer**, before any model touches it — replace the two placeholders in `tests/test_evaluation.py`, keep their names. A toy series is `pd.Series(range(240), index=pd.date_range("2025-03-01", periods=240, freq="h", tz="UTC"), dtype=float)`: the value *is* the hour number, so `persistence(y, 2).iloc[5] == y.iloc[3]` is a fact you can assert. For the harness, the test that matters records what the model was shown:
+**Test the harness on a toy series where you know the answer**, before any model touches it — replace the two placeholders in `tests/test_evaluation.py`, keep their names. The file needs these at the top (the stub only imports `pytest`), and one helper that builds the toy series — its value *is* the hour number, so `persistence(y, 2).iloc[5] == y.iloc[3]` is a fact you can assert:
+
+```python
+import pandas as pd
+
+from svedala_toolbox.evaluation import persistence, seasonal_persistence, walk_forward
+
+
+def toy(n=24 * 10):
+    idx = pd.date_range("2025-03-01", periods=n, freq="h", tz="UTC")
+    return pd.Series(range(n), index=idx, dtype=float)      # 0, 1, 2, ... one per hour
+```
+
+For the harness, the test that matters records what the model was shown:
 
 ```python
 def test_walk_forward_never_sees_future():
@@ -47,7 +61,9 @@ Put the slice back: `2 passed`. That red run is the only proof the harness canno
 
 ## 2. Fit and choose (~40 min)
 
-Explore ACF/PACF on your series in a notebook (exploration is notebook work — the *harness* is toolbox work): LC9 section 1.1 shows the reading, `plot_pacf` sits next to `plot_acf` in the same module. Fit at least two SARIMA candidates — LC9's `(1,0,1)(1,1,1,24)` is a fair first one; change one order at a time — and compare them with the harness, not with the summary table: the AIC in `fit.summary()` says how well a model fits the *training* data, the harness says how it forecasts. Pick one **with a reasoned sentence per rejected candidate** in the README.
+Explore ACF/PACF on your series in a notebook — `notebooks/lab7_explore.ipynb` in the host repo, committed, because exploration is notebook work and the *harness* is toolbox work. Your series is your Lab 6 week if it has no gaps, otherwise the course parquet's `ZON_MITT`, prepared as LC9 section 0.2 does (`interpolate(limit=3).dropna().asfreq("h")`). Pick **one held-out week** now and write it down — on the course series use 16–22 February, so your numbers can be checked against the reference; on your own series, the last full week you have. LC9 section 1.1 shows how to read the ACF; `plot_pacf` sits next to `plot_acf` in the same module and shows the *partial* autocorrelation — the correlation at lag *k* with the shorter lags' influence removed. The usual reading: the lag where the PACF bars drop to nothing suggests *p*, the lag where the ACF bars drop suggests *q*; on load data both readings are rough, which is why the harness has the last word.
+
+Fit at least two SARIMA candidates — LC9's `(1,0,1)(1,1,1,24)` is a fair first one; change one order at a time — and compare them with the harness, not with the summary table: the AIC in `fit.summary()` says how well a model fits the *training* data, the harness says how it forecasts. Pick one **with a reasoned sentence per rejected candidate** in the README.
 
 Wrap a candidate as a `model_fn` for the harness — a function that fits on the training window it is handed and returns the forecast:
 
@@ -59,11 +75,11 @@ def sarima_fn(train, horizon):
     return fit.forecast(horizon).values
 ```
 
-The harness **refits** the model every day on the growing window — that is honest and slow (about 15 seconds for a test week on the reference laptop). LC9's `state.append` reveals days without refitting, a fast approximation: on the course week the two agree to within a megawatt (155 refit against 156), on other series they can differ more. Yours is the refit number.
+The harness **refits** the model every day on the growing window — that is honest and slow: about two seconds per fit, so about 15 seconds for a test week on the reference laptop, during which the cell shows nothing. Put `print(train.index[-1])` as the first line of your `model_fn` and you see one line per day go by. If a day takes longer than a minute, the fit is struggling with that order: interrupt the kernel (the stop button) and try a smaller order — a candidate that needs twenty minutes has already told you something. Two slices inside `model_fn` are the safe form: `train.loc["2025-01-06":]` on its own, never a string and a tz-aware timestamp in the same `.loc[a:b]` (the `ValueError` from section 1). LC9's `state.append` reveals days without refitting, a fast approximation: on the course week the two agree to within a megawatt (155 refit against 156), on other series they can differ more. Yours is the refit number.
 
 ## 3. The number (~30 min)
 
-Run your chosen model, `persistence` and `seasonal_persistence` through `walk_forward` on a held-out week. The two baselines fit the harness as `model_fn`s too — persistence is "repeat the last 24 hours": `lambda train, h: train.iloc[-24:].values` (a `lambda` is a one-line unnamed function, handy exactly here); seasonal persistence is `train.iloc[-168:-144].values`, the same day last week. Report all three MAEs — `(out.forecast - out.actual).abs().mean()` on each result — and the skill percentage **against the better baseline**, `100 * (1 - mae_model / min(mae_persistence, mae_seasonal))`: beating plain persistence while losing to last-Tuesday is not a win.
+Run your chosen model, `persistence` and `seasonal_persistence` through `walk_forward` on a held-out week. The two baselines fit the harness as `model_fn`s too — persistence is "repeat the last 24 hours": `lambda train, h: train.iloc[-24:].values` (a `lambda` is a one-line unnamed function, handy exactly here); seasonal persistence is `train.iloc[-168:-144].values` — the 24 hours that started one week before the day being forecast, counted from the end of the training window. Report all three MAEs — `(out.forecast - out.actual).abs().mean()` on each result — and the skill percentage **against the better baseline**, `100 * (1 - mae_model / min(mae_persistence, mae_seasonal))`: beating plain persistence while losing to last-Tuesday is not a win.
 
 On the reference solution, course series, test week 16–22 February, refit harness:
 
@@ -71,7 +87,7 @@ On the reference solution, course series, test week 16–22 February, refit harn
 SARIMA 155 MW | persistence 203 MW | seasonal persistence 283 MW | skill vs better baseline +24%
 ```
 
-Your series and week differ; the shape of the sentence does not. If SARIMA loses to a baseline, that is a *finding*, not a failure — explain it.
+On the course series with that week you should reproduce these numbers; on your own Lab 6 series they differ, and the shape of the sentence does not. If SARIMA loses to a baseline, that is a *finding*, not a failure — explain it.
 
 **Checkpoint:** `pytest -q` → Lab 6's count plus two (`14 passed, 1 skipped` on the reference solution). Commit, push, CI green.
 
