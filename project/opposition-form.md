@@ -10,7 +10,7 @@ Bring it printed, or fill it in on a laptop and paste it into the issue afterwar
 
 **Round:** 1 / 2 / 3  **Date:**
 **Opposing group:**  **Opposed group:**
-**Answering for the opposed group (drawn at random):**
+**Answering for the opposed group (one member drawn per question):**
 **Tag reviewed:** `opp_`  **Issue link:**
 
 ---

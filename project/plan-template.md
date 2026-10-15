@@ -1,7 +1,7 @@
 # Project plan and system design — template
 
-*EG2140 Period 2. One document per group, handed in Thursday 22 October 12:00 and presented
-at the seminar on Friday 23 October. It is a steering document: too long and nobody reads it,
+*EG2140 Period 2. One document per group, handed in Friday 23 October 19:00 and presented
+at the seminar on Monday 26 October. It is a steering document: too long and nobody reads it,
 too short and it steers nothing.*
 
 *The plan half follows the KTH structure — the full guidance, section by section, is the
@@ -71,25 +71,22 @@ kept and by whom.
 
 # The design
 
-*This half is not in the KTH structure. It is ours, because in Period 2 an agent writes part of
-the code and the design is what makes that reviewable.*
+*This half is ours, not the KTH structure's. Reduced on 15 October: one figure and two short
+sections. Opposition round 1 reads the architecture as it then exists in your repository.*
 
-## 8. Architecture
+## 8. Environment and agent program
 
-The modules and what each is responsible for. One diagram, simple enough that anyone in the
-group could redraw it from memory.
+One figure: the environment you build (simulator, replay harness, grid model), the agent
+program the company asked for, and the interface between them — the table or signature that
+crosses it, written down before either side exists. The environment is the first branch of
+your WBS and has its own milestone and test.
 
-## 9. Data flow
-
-Where data enters, what happens to it, where results leave. You have built this twice already,
-in Labs 5 and 6.
-
-## 10. Test strategy
+## 9. Test strategy
 
 What you will test and how — the tests are what let you accept agent-written code at all. Say
 what CI runs and when.
 
-## 11. Technology stack, justified
+## 10. Technology stack, justified
 
 What you chose and why. pandapower is not mandated. Choosing is a decision with reasons, and
 not something an agent does for you.

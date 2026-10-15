@@ -2,8 +2,9 @@
 
 Fifteen minutes per group, all four groups in one session (see the schedule). You work with
 your agent on the projector while the rest of the course watches and interrupts. It is the
-main evidence for the **Working with the agent** points, and it is deliberately live: what we
-are assessing is how you work, not what you produced beforehand.
+one of the six oral sessions, scored per person (0 absent, 1 took part, 2 wrote a prompt, rejected
+an output or called for a test), and it is deliberately live: what we are assessing is how you
+work, not what you produced beforehand.
 
 You have seen the format once already — the unassessed demonstration in Lecturecise 15.
 

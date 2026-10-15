@@ -16,7 +16,7 @@ Each round, post exactly three questions as an issue titled "Opposition round N 
 
 ## Round themes
 
-- **Round 1 — Architecture and design.** Basis: the design document and the `opp1` tag. Does the structure fit the challenge? Are the module boundaries and data flows defensible? Where is the riskiest assumption?
+- **Round 1 — Architecture and design.** Basis: the environment–agent figure (plan sections 8–10) and the `opp1` tag. Does the environment fit the challenge? Is the interface between environment and agent program defensible — written down, tested? Where is the riskiest assumption?
 - **Round 2 — Testing.** Basis: the `opp2` tag. What is tested, what is not, and does the test suite actually protect what matters? Would you trust this CI to catch the agent's mistakes?
 - **Round 3 — Results and interface.** Basis: the `opp3` tag. Are the results evaluated honestly (baselines, splits, metrics)? Can an outsider run and understand the deliverable?
 
@@ -28,4 +28,4 @@ The opposing group leads: restate each question briefly, let the opposed group a
 
 ## What is assessed
 
-Opposition earns up to 2 points per round, 6 of the 31 grade points: substantive questions posted on time, active and constructive participation in the session, and answers grounded in your own repository when you are opposed. MANDATORY attendance: all three rounds are gates for course completion.
+Each round is one of the six oral sessions: every member of both groups is scored individually, 0–2 (absent / answered or asked when it was your turn / also spoke up unasked). Questions posted on time are a gate: not posted by Friday 19:00 = 0 for the whole opposing group that round. Each question is put to a member of the opposed group drawn at the session, so everyone must be ready to answer from the repository. MANDATORY attendance: a missed round must be made up with the examiner.
