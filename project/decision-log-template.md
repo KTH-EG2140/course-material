@@ -1,6 +1,6 @@
 # Decision log — template
 
-Copy this file into your group repository as `docs/decision-log.md`. One entry every time the agent proposed something and you decided — adopted or rejected. This log is read: opposition rounds quote it, and your final presentation draws on it. Write the entry when the decision happens, not the night before the freeze — five lines written same-day beat a page reconstructed later.
+Copy this file into your group repository as `DECISIONS.md`, at the root. One entry every time the agent proposed something and you decided — adopted or rejected. This log is read: opposition rounds quote it, and your final presentation draws on it. Write the entry when the decision happens, not the night before the freeze — five lines written same-day beat a page reconstructed later.
 
 The log is not a diary of everything the agent did. It records **judgment calls**: the moments where you could have said yes or no, and why you said what you said. Rejections are at least as valuable as adoptions — a log with no rejections says you were not checking.
 
