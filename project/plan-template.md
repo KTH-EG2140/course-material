@@ -71,8 +71,8 @@ kept and by whom.
 
 # The design
 
-*This half is ours, not the KTH structure's. Reduced on 15 October: one figure and two short
-sections. Opposition round 1 reads the architecture as it then exists in your repository.*
+*This half is ours, not the KTH structure's. Reduced on 15 October to one figure and one short
+section. Opposition round 1 reads the architecture as it then exists in your repository.*
 
 ## 8. Environment and agent program
 
@@ -81,12 +81,7 @@ program the company asked for, and the interface between them — the table or s
 crosses it, written down before either side exists. The environment is the first branch of
 your WBS and has its own milestone and test.
 
-## 9. Test strategy
-
-What you will test and how — the tests are what let you accept agent-written code at all. Say
-what CI runs and when.
-
-## 10. Technology stack, justified
+## 9. Technology stack, justified
 
 What you chose and why. pandapower is not mandated. Choosing is a decision with reasons, and
 not something an agent does for you.
