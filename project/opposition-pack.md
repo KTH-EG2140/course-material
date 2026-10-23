@@ -16,7 +16,7 @@ Each round, post exactly three questions as an issue titled "Opposition round N 
 
 ## Round themes
 
-- **Round 1 — Architecture and design.** Basis: the environment–agent figure (plan sections 8–9) and the `opp1` tag. Does the environment fit the challenge? Is the interface between environment and agent program defensible — written down, tested? Where is the riskiest assumption?
+- **Round 1 — Architecture and design.** Basis: the design half of the plan (sections 8–9: the environment–agent figure and the stack) and the `opp1` tag. Does the environment fit the challenge? Is the interface between environment and agent program defensible — written down, tested? Where is the riskiest assumption?
 - **Round 2 — Testing.** Basis: the `opp2` tag. What is tested, what is not, and does the test suite actually protect what matters? Would you trust this CI to catch the agent's mistakes?
 - **Round 3 — Results and interface.** Basis: the `opp3` tag. Are the results evaluated honestly (baselines, splits, metrics)? Can an outsider run and understand the deliverable?
 

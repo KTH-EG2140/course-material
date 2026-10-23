@@ -71,7 +71,7 @@ kept and by whom.
 
 # The design
 
-*This half is ours, not the KTH structure's. Reduced on 15 October to one figure and one short
+*This half is ours, not the KTH structure's. One figure and one short
 section. Opposition round 1 reads the architecture as it then exists in your repository.*
 
 ## 8. Environment and agent program
