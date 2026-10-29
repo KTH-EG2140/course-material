@@ -7,12 +7,12 @@ Opposition is part of your examination: each group examines another group's work
 | When | Who | What |
 |---|---|---|
 | Wednesday 19:00 | opposed group | tag the repository `opp1` / `opp2` / `opp3` — the tag freezes what is reviewed; work on main continues |
-| Friday 19:00 | opposing group | three questions posted as ONE issue in the opposed repo, against the tag; issue link submitted in Canvas |
+| Friday 19:00 | opposing group | three questions posted as THREE issues in the opposed repo, one question each, against the tag; the issue links submitted in Canvas |
 | Monday session | both groups | 20 minutes per pairing: questions, answers, discussion of the tagged state |
 
 ## The three questions
 
-Each round, post exactly three questions as an issue titled "Opposition round N — questions from group X". A good opposition question is specific (points at a file, a function, a decision-log entry), answerable (the opposed group can respond with evidence), and consequential (the answer should matter for the project's success). "Why did you choose X over Y for Z?" beats "have you thought about performance?".
+Each round, post exactly three questions, one issue each, titled "Opposition round N, question 1/2/3 — from group X". One issue per question keeps each answer and its follow-up in one thread. A good opposition question is specific (points at a file, a function, a decision-log entry), answerable (the opposed group can respond with evidence), and consequential (the answer should matter for the project's success). "Why did you choose X over Y for Z?" beats "have you thought about performance?".
 
 ## Round themes
 

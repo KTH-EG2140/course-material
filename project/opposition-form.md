@@ -4,14 +4,14 @@ One form per pairing, per round. The opposing group fills it in during the sessi
 opposed group gets a copy afterwards. It is the record of what was asked and what was
 answered, and it is what the examiner reads when setting the opposition points.
 
-Bring it printed, or fill it in on a laptop and paste it into the issue afterwards.
+Bring it printed, or fill it in on a laptop and paste each question's part into its issue afterwards.
 
 ---
 
 **Round:** 1 / 2 / 3  **Date:**
 **Opposing group:**  **Opposed group:**
 **Answering for the opposed group (one member drawn per question):**
-**Tag reviewed:** `opp_`  **Issue link:**
+**Tag reviewed:** `opp_`  **Issue links (3):**
 
 ---
 
